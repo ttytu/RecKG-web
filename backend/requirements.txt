@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+motor
+pydantic
+firebase-admin
+python-dotenv
+python-multipart
+Pillow

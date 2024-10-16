@@ -1,0 +1,29 @@
+services:
+        fastapi:
+                build:
+                        context: ./backend
+                        dockerfile: Dockerfile
+                container_name: backend
+                ports:
+                        - "8008:8000"
+                depends_on:
+                        - mongodb
+                environment:
+                        - MONGO_URI=mongodb://kdd:RecKG@mongodb:27017/?authSource=admin
+                        - MONGO_DB=undox
+                volumes:
+                        - ./backend:/app
+
+        mongodb:
+                image: mongo:latest
+                container_name: mongodb
+                restart: unless-stopped
+                ports:
+                        - "27018:27017"
+                environment:
+                        - MONGO_INITDB_ROOT_USERNAME=kdd
+                        - MONGO_INITDB_ROOT_PASSWORD=kddnumber1
+                        - MONGO_INITDB_DATABASE=RecKG
+                volumes:
+                        - ./database:/data/db
+                tty: true
