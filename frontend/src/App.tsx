@@ -9,7 +9,7 @@ import './App.css'
 function App() {
 	return (
 		<Router>
-			<div className={`max-w-6xl h-screen mx-auto p-4`}>
+			<div className={`max-w-7xl h-screen mx-auto p-4`}>
 				<Routes>
 					<Route path="/" element={<Home />} />
 					<Route path="/flow" element={<Flow />} />
