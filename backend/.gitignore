@@ -117,3 +117,5 @@ dmypy.json
 
 # FastAPI specific
 *.db
+
+/data
