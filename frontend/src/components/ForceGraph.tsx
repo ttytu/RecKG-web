@@ -31,20 +31,6 @@ const ForceGraph: React.FC<ForceGraphProps> = ({ data }) => {
 	const gRef = useRef<SVGGElement | null>(null);
 
 	const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-	const [linkedSources, setLinkedSources] = useState<Node[]>([]);
-	const [linkedTargets, setLinkedTargets] = useState<Node[]>([]);
-
-	useEffect(() => {
-		if (selectedNode) {
-			const sources = data.links.filter((link) => link.source === selectedNode.id).map((link) => link.target as Node);
-			const targets = data.links.filter((link) => link.target === selectedNode.id).map((link) => link.source as Node);
-
-			setLinkedSources(sources);
-			setLinkedTargets(targets);
-
-			console.log(sources, targets);
-		}
-	}, [selectedNode]);
 
 	useEffect(() => {
 		const width = 800;
@@ -97,6 +83,18 @@ const ForceGraph: React.FC<ForceGraphProps> = ({ data }) => {
 			.join("circle")
 			.attr("r", 5)
 			.attr("fill", (d) => color(d.group.toString()))
+			.on("click", (event, d) => {
+				const [x, y] = [d.x, d.y];
+				const k = 3;
+				const transform = d3.zoomIdentity
+					.scale(k)
+					.translate(-x, -y);
+
+				svg.transition().duration(750).call(
+					zoom.transform as any,
+					transform
+				);
+			})
 			.on("mouseover", function (event, d) {
 				d3.select(this).attr("r", 10).attr("stroke", "white").attr("stroke-width", 2);
 				const text = g.append("text")
@@ -160,13 +158,30 @@ const ForceGraph: React.FC<ForceGraphProps> = ({ data }) => {
 			svg.call(zoom as any);
 		}
 
+		// Define arrow markers
+		svg.append("defs").append("marker")
+			.attr("id", "arrowhead")
+			.attr("viewBox", "-0 -5 10 10")
+			.attr("refX", 13)
+			.attr("refY", 0)
+			.attr("orient", "auto")
+			.attr("markerWidth", 6)
+			.attr("markerHeight", 6)
+			.attr("xoverflow", "visible")
+			.append("svg:path")
+			.attr("d", "M 0,-5 L 10 ,0 L 0,5")
+			.attr("fill", "#999")
+			.style("stroke", "none");
+
 		// Update the position of links and nodes each time the simulation ticks.
 		simulation.on("tick", () => {
 			link
 				.attr("x1", (d) => (d.source as Node).x ?? 0)
 				.attr("y1", (d) => (d.source as Node).y ?? 0)
 				.attr("x2", (d) => (d.target as Node).x ?? 0)
-				.attr("y2", (d) => (d.target as Node).y ?? 0);
+				.attr("y2", (d) => (d.target as Node).y ?? 0)
+				.attr("marker-end", "url(#arrowhead)");
+
 			node.attr("cx", (d) => d.x!).attr("cy", (d) => d.y!);
 		});
 
