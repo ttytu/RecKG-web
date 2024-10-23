@@ -38,11 +38,53 @@
 	::-webkit-scrollbar-thumb:hover {
 		background-color: rgba(0, 0, 0, 0.3);
 	}
+
+	input[type="range"] {
+		-webkit-appearance: none;
+		appearance: none;
+
+		background: transparent;
+		cursor: pointer;
+		width: 100%;
+	}
+
+	input[type="range"]::-webkit-slider-runnable-track {
+		background-color: white;
+		height: 0.7rem;
+	}
+
+	input[type="range"]::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		/* Override default look */
+		appearance: none;
+		/* Centers thumb on the track */
+		background-color: black;
+		height: 0.7rem;
+		width: 0.5rem;
+	}
+
+	input[type="range"]::-webkit-slider-thumb:hover {
+		-webkit-appearance: none;
+		/* Override default look */
+		appearance: none;
+		/* Centers thumb on the track */
+		background-color: gray;
+		height: 0.7rem;
+		width: 0.5rem;
+	}
 }
 
 
 @layer components {
 	body {
 		@apply bg-white dark:bg-zinc-950 text-black dark:text-white;
+	}
+
+	.btn-primary {
+		@apply bg-blue-500 text-white;
+	}
+
+	.btn-transparent {
+		@apply hover:opacity-50;
 	}
 }
