@@ -1,1 +1,9 @@
 /database
+/backend/config.yml
+/backend/*.ipynb
+/backend/format
+/backend/*.csv
+/backend/*.json
+/backend/*.json.gz
+/storage/*
+/backend/db.py
