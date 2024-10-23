@@ -72,6 +72,14 @@
 		height: 0.7rem;
 		width: 0.5rem;
 	}
+
+	.node-labels {
+		fill: currentColor;
+	}
+
+	.link-labels {
+		fill: currentColor;
+	}
 }
 
 
@@ -86,5 +94,10 @@
 
 	.btn-transparent {
 		@apply hover:opacity-50;
+	}
+
+	.node-labels, 
+	.link-labels {
+		@apply text-black dark:text-white text-[0.4rem] capitalize;
 	}
 }

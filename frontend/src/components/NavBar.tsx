@@ -8,9 +8,12 @@ const NavBar: React.FC = () => {
 			<div className="font-black">
 				<Link to="/">RecKG</Link>
 			</div>
-			<ul className="navbar-links flex">
+			<ul className="navbar-links flex gap-2">
 				<li>
 					<Link to="/graph">Graph</Link>
+				</li>
+				<li>
+					<Link to="/graphSVG">Graph SVG</Link>
 				</li>
 			</ul>
 		</nav>

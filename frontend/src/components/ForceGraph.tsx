@@ -39,7 +39,7 @@ const ForceDirectedGraph: React.FC<ForceGraphProps> = ({ data }) => {
 	// Create a ref to store the simulation instance
 	const simulationRef = useRef<d3.Simulation<Node, Link> | null>(null);
 
-	const color = d3.scaleOrdinal(d3.schemeCategory10);
+	const color = d3.scaleOrdinal(d3.schemePiYG[9]);
 	const links = data.links.map(d => ({ ...d }));
 	const nodes = data.nodes.map(d => ({ ...d }));
 
@@ -69,21 +69,13 @@ const ForceDirectedGraph: React.FC<ForceGraphProps> = ({ data }) => {
 				context.clearRect(0, 0, width, height);
 
 				context.save();
-				context.globalAlpha = 0.6;
-				context.strokeStyle = "#999";
-				context.beginPath();
 				(links as (Link & { source: Node; target: Node })[]).forEach(drawLink);
-				context.stroke();
 				context.restore();
 
 				context.save();
 				nodes.forEach(node => {
 					context.beginPath();
 					drawNode(node);
-					context.fillStyle = color(node.group.toString()) as string;
-					context.strokeStyle = "#fff";
-					context.fill();
-					context.stroke();
 				});
 				context.restore();
 			});
@@ -93,6 +85,8 @@ const ForceDirectedGraph: React.FC<ForceGraphProps> = ({ data }) => {
 		function drawLink(d: Link & { source: Node; target: Node }) {
 			if (!context) return;
 
+			context.globalAlpha = 0.6;
+			context.strokeStyle = "#999";
 			context.beginPath();
 			context.moveTo(d.source.x!, d.source.y!);
 			context.lineTo(d.target.x!, d.target.y!);
@@ -131,6 +125,8 @@ const ForceDirectedGraph: React.FC<ForceGraphProps> = ({ data }) => {
 			if (!context) return;
 			context.moveTo(d.x! + 5, d.y!);
 			context.arc(d.x!, d.y!, 5, 0, 2 * Math.PI);
+			context.fillStyle = color(d.group.toString());
+			context.fill();
 		}
 
 		// Drag handlers
@@ -148,7 +144,7 @@ const ForceDirectedGraph: React.FC<ForceGraphProps> = ({ data }) => {
 				.on("end", dragended));
 
 		function dragstarted(event: any) {
-			if (!event.active) simulation.alphaTarget(0.3).restart();
+			if (!event.active) simulation.alphaTarget(0.2).restart();
 			event.subject.fx = event.subject.x;
 			event.subject.fy = event.subject.y;
 

@@ -35,12 +35,16 @@ const mapData = (nodes: any[], links: any[]) => {
 
 const data = generateRandomGraph(200, 200);
 
-const App = () => {
+const Graph = () => {
 	return (
-		<div className="w-full h-full">
+		<div className="w-full h-full flex gap-4 flex-col lg:flex-row">
+			<div className="w-1/5">
+				<h1 className="text-2xl font-bold">Graph on Canvas</h1>
+				<p className="text-gray-500">Using D3</p>
+			</div>
 			<ForceGraph data={mapData(testNodes, testEdges)} />
 		</div>
 	);
 };
 
-export default App;
+export default Graph;
