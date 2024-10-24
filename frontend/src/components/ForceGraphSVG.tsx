@@ -114,6 +114,7 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 			.join("circle")
 			.attr("r", 5)
 			.attr("fill", (d) => color(d.group.toString()))
+			.attr("cursor", "pointer")
 			.on("mouseover", function (event, d) {
 				d3.select(this).attr("r", 10).attr("stroke", "white").attr("stroke-width", 2);
 			})
