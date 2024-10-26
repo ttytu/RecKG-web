@@ -6,3 +6,6 @@ firebase-admin
 python-dotenv
 python-multipart
 Pillow
+psycopg2
+yaml
+uuid
