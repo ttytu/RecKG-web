@@ -6,9 +6,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from typing import List, Optional, Union
-from pydantic import BaseModel, Field
-from starlette.staticfiles import StaticFiles
+from pydantic import BaseModel
 from db import *
+from data_processing import *
 
 app = FastAPI(root_path="/api")
 
@@ -25,27 +25,28 @@ app.add_middleware(
 )
 
 class UserFileEntry(BaseModel):
-    User: Union[str, bool]
-    Age: Union[str, bool]
-    Gender: Union[str, bool]
-    Occupation: Union[str, bool]
-    Residence: Union[str, bool]
+    user: Union[str, bool]
+    age: Union[str, bool]
+    gender: Union[str, bool]
+    occupation: Union[str, bool]
+    residence: Union[str, bool]
 
 class ItemFileEntry(BaseModel):
-    Item: Union[str, bool]
-    Performer: Union[str, bool]
-    Type: Union[str, bool]
-    Release_date: Union[str, bool]
+    item: Union[str, bool]
+    performer: Union[str, bool]
+    type: Union[str, bool]
+    release_date: Union[str, bool]
 
 class InteractionFIleEntry(BaseModel):
-    User: Union[str, bool]
-    Item: Union[str, bool]
-    Interaction: Optional[List[str]]
+    user: Union[str, bool]
+    item: Union[str, bool]
+    rating: Union[str, bool]
+    interaction: Union[List[str], bool, None]
 class RequestData(BaseModel):
     id: Optional[str]
-    user_file: Optional[List[UserFileEntry]]
-    item_file: Optional[List[ItemFileEntry]]
-    interaction_file: Optional[List[InteractionFIleEntry]]
+    user_data: Optional[List[UserFileEntry]]
+    item_data: Optional[List[ItemFileEntry]]
+    interaction_data: Optional[List[InteractionFIleEntry]]
 
 
 @app.get("/")
@@ -63,8 +64,12 @@ async def create_upload_file(
     db = DATABASE()
 
     user_file_content = await user_file.read()
+    await user_file.seek(0)
     item_file_content = await item_file.read()
+    await item_file.seek(0)
     interaction_file_content = await interaction_file.read()
+    await interaction_file.seek(0)
+
     columns_list = db.put_data(user_file=user_file_content, 
                                item_file=item_file_content, 
                                interaction_file=interaction_file_content)
@@ -81,42 +86,40 @@ async def process_data(data: List[RequestData]):
     for entry in data:
         if entry.id:
             response_data.update({"id": entry.id})
-        if entry.user_file:
-            for user in entry.user_file:
+        if entry.user_data:
+            for user in entry.user_data:
                 response_data.update({
                     "user_data": {
-                        "user_id": user.User,
-                        "age": user.Age,
-                        "gender": user.Gender,
-                        "occupation": user.Occupation,
-                        "residence": user.Residence
+                        "user_id": user.user,
+                        "age": user.age,
+                        "gender": user.gender,
+                        "occupation": user.occupation,
+                        "residence": user.residence
                     }
                 })
-        if entry.item_file:
-            for item in entry.item_file:
+        if entry.item_data:
+            for item in entry.item_data:
                 response_data.update({
                     "item_data": {
-                        "item_id": item.Item,
-                        "performer": item.Performer,
-                        "type": item.Type,
-                        "release_date": item.Release_date
+                        "item_id": item.item,
+                        "performer": item.performer,
+                        "type": item.type,
+                        "release_date": item.release_date
                     }
                 })
-        if entry.interaction_file:
-            for item in entry.interaction_file:
+        if entry.interaction_data:
+            for item in entry.interaction_data:
                 response_data.update({
                     "interaction_data": {
-                        "user_id": item.User,
-                        "item_id": item.Item,
-                        "interaction_list": item.Interaction
+                        "user_id": item.user,
+                        "item_id": item.item,
+                        "rating": item.rating,
+                        "interaction_list": item.interaction
                     }
                 })
-    result = db.data_processing(response_data)
+    result = db.data_processing(response_data)    
+    if result['status']!=200:
+        return result
 
-    if result.get("status") != 200:
-        raise HTTPException(
-            status_code=result["status"],
-            detail={"error": result["error"], "message": result["detail"]}
-        )
-
+    result = DataProcessing(response_data).process_data()
     return result
