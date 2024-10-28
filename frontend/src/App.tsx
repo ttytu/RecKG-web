@@ -1,11 +1,13 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
+
+import './App.css'\
 
 import Home from './pages/Home'
-import Graph from './pages/Graph'
 import NavBar from './components/NavBar'
 import GraphSVG from './pages/GraphSVG'
-
-import './App.css'
+import Footer from './components/Footer'
+import Upload from './pages/Upload'
 
 
 function App() {
@@ -16,10 +18,13 @@ function App() {
 			<div className={`h-[90vh] mx-auto p-4`}>
 				<Routes>
 					<Route path="/" element={<Home />} />
-					<Route path="/graph" element={<Graph />} />
-					<Route path="/graphSVG" element={<GraphSVG />} />
+					<Route path="/upload" element={<Upload />} />
+					<Route path="/graph" element={<GraphSVG />} />
+					<Route path="*" element={<Navigate to="/" />} />
 				</Routes>
 			</div>
+
+			<Footer />
 		</Router>
 	)
 }
