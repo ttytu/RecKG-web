@@ -1,14 +1,20 @@
 import os
 import pandas as pd
+import zipfile
 
 from fastapi import Depends, FastAPI, HTTPException, Security, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from typing import List, Optional, Union
 from pydantic import BaseModel
+from uuid import UUID
 from db import *
 from data_processing import *
+from yaml import full_load
+
+with open('config.yml') as f:
+    file = full_load(f)
 
 app = FastAPI(root_path="/api")
 
@@ -123,3 +129,22 @@ async def process_data(data: List[RequestData]):
 
     result = DataProcessing(response_data).process_data()
     return result
+
+@app.get("/download-json/{id}")
+async def download_json(id: UUID):
+    base_path = f"{file['storage_path']}/{id}"
+
+    node_file_path = os.path.join(base_path, "node.json")
+    edge_file_path = os.path.join(base_path, "edge.json")
+    if not (os.path.exists(node_file_path) and os.path.exists(edge_file_path)):
+        raise HTTPException(status_code=404, detail="One or both JSON files not found")
+
+    zip_path = os.path.join(base_path, "node_edge_files.zip")
+    try:
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            zipf.write(node_file_path, arcname=f"node.json")
+            zipf.write(edge_file_path, arcname=f"edge.json")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to create ZIP file")
+        
+    return FileResponse(zip_path, filename="node_edge_files.zip", media_type="application/zip")
