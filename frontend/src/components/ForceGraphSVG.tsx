@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
 
-// Define the types for nodes and links
 interface Node {
 	id: string;
 	group: number;
@@ -133,7 +132,7 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 
 				const neighbors = links
 					.filter(link => link.source === d || link.target === d)
-					.map(link => link.source === d ? link.target.id : link.source.id);
+					.map(link => (link.source === d ? (link.target as Node).id : (link.source as Node).id));
 				neighbors.push(d.id);
 
 				node
@@ -156,7 +155,7 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 				const k = 2;
 				const transform = d3.zoomIdentity
 					.scale(k)
-					.translate(-x, -y);
+					.translate(-(x ?? 0), -(y ?? 0));
 
 				svg.transition().duration(750).call(
 					zoom.transform as any,
