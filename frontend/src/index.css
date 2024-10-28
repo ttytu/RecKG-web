@@ -31,12 +31,16 @@
 		height: 8px;
 	}
 
+	::-webkit-scrollbar-track {
+		background-color: rgba(39, 39, 42, 0.3);
+	}
+
 	::-webkit-scrollbar-thumb {
-		background-color: rgba(0, 0, 0, 0.2);
+		background-color: rgba(39, 39, 42, 0.4);
 	}
 
 	::-webkit-scrollbar-thumb:hover {
-		background-color: rgba(0, 0, 0, 0.3);
+		background-color: rgba(104, 104, 104, 0.9);
 	}
 
 	input[type="range"] {
@@ -96,8 +100,12 @@
 		@apply hover:opacity-50;
 	}
 
-	.node-labels, 
+	.node-labels,
 	.link-labels {
 		@apply text-black dark:text-white text-[0.4rem] capitalize;
+	}
+
+	.text-link {
+		@apply hover:opacity-70;
 	}
 }
