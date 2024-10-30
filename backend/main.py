@@ -154,5 +154,8 @@ async def download_json(id: UUID):
 async def process_data(id: UUID, number_of_users: int, number_of_user2item_interaction: int):
     N = number_of_users
     M = number_of_user2item_interaction
-    sample_data = DataSampling(number_of_users, number_of_user2item_interaction, id)
-    return sample_data.get_data()
+    try:
+        sample_data = DataSampling(N, M, id)
+        return sample_data.get_data()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
