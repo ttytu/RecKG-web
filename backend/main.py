@@ -9,9 +9,10 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from typing import List, Optional, Union
 from pydantic import BaseModel
 from uuid import UUID
+from yaml import full_load
 from db import *
 from data_processing import *
-from yaml import full_load
+from data_sampling import *
 
 with open('config.yml') as f:
     file = full_load(f)
@@ -148,3 +149,10 @@ async def download_json(id: UUID):
         raise HTTPException(status_code=500, detail="Failed to create ZIP file")
         
     return FileResponse(zip_path, filename="node_edge_files.zip", media_type="application/zip")
+
+@app.get("/sample_data")
+async def process_data(id: UUID, number_of_users: int, number_of_user2item_interaction: int):
+    N = number_of_users
+    M = number_of_user2item_interaction
+    sample_data = DataSampling(number_of_users, number_of_user2item_interaction, id)
+    return sample_data.get_data()
