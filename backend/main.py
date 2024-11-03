@@ -40,6 +40,7 @@ class UserFileEntry(BaseModel):
 
 class ItemFileEntry(BaseModel):
     item: Union[str, bool]
+    item_name: Union[str, bool]
     performer: Union[str, bool]
     type: Union[str, bool]
     release_date: Union[str, bool]
@@ -111,6 +112,7 @@ async def process_data(data: List[RequestData]):
                 response_data.update({
                     "item_data": {
                         "item_id": item.item,
+                        "item_name": item.item_name,
                         "performer": item.performer,
                         "type": item.type,
                         "release_date": item.release_date
