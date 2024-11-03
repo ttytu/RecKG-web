@@ -40,6 +40,7 @@ class UserFileEntry(BaseModel):
 
 class ItemFileEntry(BaseModel):
     item: Union[str, bool]
+    item_name: Union[str, bool]
     performer: Union[str, bool]
     type: Union[str, bool]
     release_date: Union[str, bool]
@@ -64,6 +65,7 @@ async def read_root():
 
 @app.post("/uploadfiles/")
 async def create_upload_file(    
+    dataset_name: str,
     user_file: UploadFile = File(...),
     item_file: UploadFile = File(...),
     interaction_file: UploadFile = File(...)
@@ -77,7 +79,8 @@ async def create_upload_file(
     interaction_file_content = await interaction_file.read()
     await interaction_file.seek(0)
 
-    columns_list = db.put_data(user_file=user_file_content, 
+    columns_list = db.put_data(dataset_name = dataset_name,
+                               user_file=user_file_content, 
                                item_file=item_file_content, 
                                interaction_file=interaction_file_content)
     return columns_list
@@ -109,6 +112,7 @@ async def process_data(data: List[RequestData]):
                 response_data.update({
                     "item_data": {
                         "item_id": item.item,
+                        "item_name": item.item_name,
                         "performer": item.performer,
                         "type": item.type,
                         "release_date": item.release_date
