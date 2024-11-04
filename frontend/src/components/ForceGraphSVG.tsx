@@ -21,6 +21,7 @@ interface Link {
 
 interface ForceGraphProps {
 	data: {
+		name?: string;
 		nodes: Node[];
 		links: Link[];
 	};
@@ -271,7 +272,7 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 	}, [links, nodes, linkDistance, linkStrength, chargeStrength]);
 
 	return (
-		<div className="relative flex w-full h-full bg-gradient-to-t from-zinc-900 to-zinc-800">
+		<div className="relative flex w-full h-full">
 			<svg className="w-full h-full" ref={svgRef}>
 				<g ref={gRef}></g>
 			</svg>
@@ -333,7 +334,7 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 				)}
 				{!selectedNode && (
 					<div className="p-4">
-						<h2 className="text-xl font-semibold">Sample Graph</h2>
+						<h2 className="text-xl font-semibold">{data.name}</h2>
 						<p className="text-gray-300">Click a node to see details</p>
 					</div>
 				)}
