@@ -92,12 +92,20 @@
 		@apply bg-white dark:bg-zinc-950 text-black dark:text-white;
 	}
 
+	label {
+		@apply text-xs mb-1;
+	}
+
+	select {
+		@apply text-black dark:text-white bg-white dark:bg-zinc-950;
+	}
+
 	.btn-primary {
-		@apply bg-blue-500 text-white;
+		@apply bg-zinc-700 text-white hover:opacity-80 disabled:opacity-50;
 	}
 
 	.btn-transparent {
-		@apply hover:opacity-50;
+		@apply hover:opacity-80;
 	}
 
 	.node-labels,
