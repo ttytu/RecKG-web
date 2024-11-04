@@ -14,19 +14,21 @@ except YAMLError:
 
 class DataSampling:
     def __init__(self, N, M, id):
-        try:
-            self.set_random_seed()
-            self.DATA_PATH = f"{config.get('storage_path', '.')}/{id}"
-            self.N = N
-            self.M = M
+        self.set_random_seed()
+        self.DATA_PATH = f"{config.get('storage_path', '.')}/{id}"
+        self.N = N
+        self.M = M
 
-            self.USER_COLUMNS = ['user_id', 'age', 'gender', 'occupation', 'residence']
-            self.ITEM_COLUMNS = ['item_id', 'performer', 'type', 'release_date']
-            self.INTERACTION_COLUMNS = ['user_id', 'item_id', 'rating', 'interaction_list']
-            
-            self.sampled_edge_data = []
-            self.sampled_node_data = []
-            
+        self.USER_COLUMNS = ['user_id', 'age', 'gender', 'occupation', 'residence']
+        self.ITEM_COLUMNS = ['item_id', 'performer', 'type', 'release_date']
+        self.INTERACTION_COLUMNS = ['user_id', 'item_id', 'rating', 'interaction_list']
+        
+        self.sampled_edge_data = []
+        self.sampled_node_data = []
+        
+        self.id_set = set()
+
+        try:    
             self.load_and_index_json()
             self.sampling()
         except Exception as e:
@@ -82,24 +84,24 @@ class DataSampling:
             sampled_user_list = random.sample(list(M_interaction_user.keys()), min(self.N, len(M_interaction_user)))
             
             for user_id in sampled_user_list:
-                self.get_sampled_node_list(interaction_dict=interaction_dict, id=user_id, type_info='user_id', id_set=set())
+                self.get_sampled_node_list(interaction_dict=interaction_dict, id=user_id, type_info='user_id')
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Sampling error: {e}")
 
-    def get_sampled_node_list(self, interaction_dict, id, type_info, id_set):
+    def get_sampled_node_list(self, interaction_dict, id, type_info):
         try:
-            if id not in id_set:
+            if id not in self.id_set:
                 source_node = self.node_data.get(id)
                 if source_node:
                     self.sampled_node_data.append(source_node)
-                    id_set.add(id)
+                    self.id_set.add(id)
 
                 for edge in interaction_dict[type_info].get(id, []):
                     if edge not in self.sampled_edge_data:
                         self.sampled_edge_data.append(edge)
                     target_id = edge['target']['data']
-                    if target_id not in id_set:
-                        self.get_sampled_node_list(interaction_dict, target_id, self.node_data[target_id]['type'], id_set)
+                    if target_id not in self.id_set:
+                        self.get_sampled_node_list(interaction_dict, target_id, self.node_data[target_id]['type'])
         except KeyError as e:
             raise HTTPException(status_code=400, detail=f"KeyError: {e} not found in node data or interaction dictionary.")
         except Exception as e:
