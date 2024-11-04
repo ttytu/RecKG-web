@@ -109,6 +109,7 @@ async def process_data(data: List[RequestData]):
                     "release_date": entry.item_data.release_date
                 }
             })
+
         if entry.interaction_data:
             response_data.update({
                 "interaction_data": {
