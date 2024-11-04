@@ -22,7 +22,7 @@ with open('config.yml') as f:
 app = FastAPI(root_path="/api")
 
 origins = [
-    "http://localhost",
+    "http://localhost" ,
 ]
 
 app.add_middleware(
@@ -57,12 +57,6 @@ class RequestData(BaseModel):
     user_data: Optional[UserFileEntry]
     item_data: Optional[ItemFileEntry]
     interaction_data: Optional[InteractionFIleEntry]
-
-
-@app.get("/")
-async def read_root():
-    return {"message": "Hello World"}
-
 
 
 @app.post("/uploadfiles/")
@@ -169,6 +163,16 @@ async def process_data():
 
     try:
         result = db.get_id_list()
+        for item in result:
+            id = item['id']
+            folder_path = Path(f"{file['storage_path']}/{id}")
+            node_file = folder_path / "node.json"
+            edge_file = folder_path / "edge.json"
+            
+            if folder_path.exists() and node_file.exists() and edge_file.exists():
+                item.update({"has_files": True})
+            else:
+                item.update({"has_files": False})
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
