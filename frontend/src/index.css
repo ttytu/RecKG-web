@@ -108,6 +108,10 @@
 		@apply hover:opacity-80;
 	}
 
+	.btn-red {
+		@apply bg-red-500 text-white hover:bg-red-600;
+	}
+
 	.node-labels,
 	.link-labels {
 		@apply text-black dark:text-white text-[0.4rem] capitalize;

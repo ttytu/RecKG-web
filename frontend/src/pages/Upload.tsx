@@ -210,9 +210,9 @@ const Upload: React.FC = () => {
 										disabled={loading}
 										onChange={handleFileChange("user")}
 										className="
-							bg-zinc-700
-							file:px-2 file:py-1
-							file:mr-4 file:p-2 file:border-0 hover:file:opacity-80"
+											bg-zinc-700
+											file:px-2 file:py-1
+											file:mr-4 file:p-2 file:border-0 hover:file:opacity-80"
 									/>
 								</div>
 								<div className="flex flex-col">
@@ -223,9 +223,9 @@ const Upload: React.FC = () => {
 										disabled={loading}
 										onChange={handleFileChange("item")}
 										className="
-							bg-zinc-700
-							file:px-2 file:py-1
-							file:mr-4 file:p-2 file:border-0 hover:file:opacity-80"
+											bg-zinc-700
+											file:px-2 file:py-1
+											file:mr-4 file:p-2 file:border-0 hover:file:opacity-80"
 									/>
 								</div>
 								<div className="flex flex-col">
@@ -236,9 +236,9 @@ const Upload: React.FC = () => {
 										disabled={loading}
 										onChange={handleFileChange("interaction")}
 										className="
-							bg-zinc-700
-							file:px-2 file:py-1
-							file:mr-4 file:p-2 file:border-0 hover:file:opacity-80"
+											bg-zinc-700
+											file:px-2 file:py-1
+											file:mr-4 file:p-2 file:border-0 hover:file:opacity-80"
 									/>
 								</div>
 							</div>

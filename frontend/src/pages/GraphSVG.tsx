@@ -60,13 +60,35 @@ const GraphSVG = () => {
 			const data = await response.json();
 			console.log('Fetched graph data', data);
 
-			const graph =  mapData(data.sampled_node_data, data.sampled_edge_data, selectedDataName);
+			const graph = mapData(data.sampled_node_data, data.sampled_edge_data, selectedDataName);
 			setSampledGraph(graph);
 			localStorage.setItem('graphData', JSON.stringify(graph));
 		} catch (error) {
 			console.error('Failed to fetch graph data', error);
 		} finally {
 			setLoading(false);
+		}
+	}
+
+	const handleDelete = async (dataID: string) => {
+		setLoading(true);
+
+		try {
+			const response = await fetch(`http://165.246.21.166/api/delete_data/${dataID}`, {
+				method: "DELETE",
+				headers: {
+					"accept": "application/json",
+				},
+			});
+
+			if (response.ok) {
+				alert("Files deleted successfully!");
+			} else {
+				alert("Failed to delete files.");
+			}
+		} catch (error) {
+			console.error("Error deleting files:", error);
+			alert("An error occurred while deleting files.");
 		}
 	}
 
@@ -80,23 +102,66 @@ const GraphSVG = () => {
 					<h3 className="text-lg font-bold">
 						Select Dataset
 					</h3>
+
+					<div className="w-full grid grid-cols-2 gap-2">
+						<div className="w-full">
+							<label className="" htmlFor="dataset-name">
+								Number of Users
+							</label>
+							<input
+								type="text"
+								required
+								value={5}
+								disabled={loading}
+								// onChange={1}
+								placeholder="Input Dataset Name"
+								className="bg-zinc-700 px-2 py-1 w-full"
+							/>
+						</div>
+						<div className="w-full">
+							<label className="" htmlFor="">
+								UI Interactions
+							</label>
+							<input
+								type="text"
+								required
+								value={5}
+								disabled={loading}
+								// onChange={1}
+								placeholder="Input Dataset Name"
+								className="bg-zinc-700 px-2 py-1 w-full"
+							/>
+						</div>
+					</div>
 					<div className="w-full flex flex-col gap-2">
 						{uploadedData.filter(d => d.has_files === true).map((data, index) => (
-							<button
-								key={data.id}
-								onClick={() => handleDataSelection(data)}
-								className={`text-sm flex flex-col p-2 bg-zinc-700 ${(selectedDataId === data.id) ? 'bg-zinc-600' : ''}`}
-							>
-								<p className="font-semibold">{index + 1}. {data.dataset_name}</p>
-								<p className="text-xs text-zinc-500">
-									{new Date(data.timestamp).toISOString().slice(0, 16).replace('T', ' ')}
-								</p>
-							</button>
+							<div key={data.id} className="relative w-full">
+								<button
+									disabled={loading}
+									onClick={() => handleDataSelection(data)}
+									className={`btn-primary text-sm w-full flex flex-col p-2 ${selectedDataId === data.id ? 'bg-zinc-600' : ''}`}
+								>
+									<p className="font-semibold">{index + 1}. {data.dataset_name}</p>
+									<p className="text-xs text-zinc-500">
+										{new Date(data.timestamp).toISOString().slice(0, 16).replace('T', ' ')}
+									</p>
+								</button>
+								<button
+									disabled={loading}
+									onClick={() => handleDelete(data.id)}
+									className="btn-red absolute top-0 right-0 p-1"
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+										<path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+									</svg>
+								</button>
+							</div>
 						))}
 					</div>
 					<button
 						className="btn-primary p-2"
 						onClick={createGraph}
+						disabled={selectedDataId === "" || loading}
 					>
 						{loading ? 'Loading...' : 'Sample Graph'}
 					</button>
@@ -106,6 +171,15 @@ const GraphSVG = () => {
 				{sampledGraph &&
 					<ForceGraphSVG data={sampledGraph} />
 				}
+				{(!sampledGraph || loading) && (
+					<div className="flex items-center justify-center h-full">
+						{loading ? (
+							<p className="text-2xl text-zinc-500 animate-pulse">Loading...</p>
+						) : (
+							<p className="text-2xl text-zinc-500">No Graph Data</p>
+						)}
+					</div>
+				)}
 			</div>
 		</div>
 	);
