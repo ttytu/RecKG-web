@@ -2,8 +2,8 @@
 
 function Home() {
 	return (
-		<div className="h-[90vh]">
-			<h1 className="text-3xl font-bold">Welcome to RecKG</h1>
+		<div className="">
+			<h1 className="">Welcome to RecKG</h1>
 		</div>
 	);
 };

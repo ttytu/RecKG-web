@@ -23,7 +23,7 @@ function App() {
 			<Router>
 				<NavBar />
 
-				<div className={`mx-auto p-4`}>
+				<div className={`mx-auto p-4 text-sm`}>
 					<Routes>
 						<Route path="/" element={<Home />} />
 						<Route path="/upload" element={<Upload />} />

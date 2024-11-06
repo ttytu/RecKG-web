@@ -288,7 +288,7 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 					</div>
 				</button>
 				{!paramsHidden && (
-					<div className="flex flex-col gap-2 bg-black bg-opacity-30 backdrop-blur-md p-2">
+					<div className="flex flex-col gap-2 p-2">
 						<div>
 							<label className="">Link Distance</label>
 							<input
@@ -299,7 +299,6 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 								onChange={(e) => setLinkDistance(parseInt(e.target.value))}
 							/>
 						</div>
-
 						<div>
 							<label className="">Link Strength</label>
 							<input
@@ -311,7 +310,6 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 								onChange={(e) => setLinkStrength(parseFloat(e.target.value))}
 							/>
 						</div>
-
 						<div>
 							<label className="">Charge Strength</label>
 							<input
@@ -328,13 +326,13 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 			<div className="absolute top-0 left-0 grow flex flex-col gap-2">
 				{selectedNode && (
 					<div className="p-4">
-						<h2 className="text-xl font-semibold">{selectedNode.title ?? selectedNode.id}</h2>
+						<h2 className="">{selectedNode.title ?? selectedNode.id}</h2>
 						<p className="">{selectedNode.group}</p>
 					</div>
 				)}
 				{!selectedNode && (
 					<div className="p-4">
-						<h2 className="text-xl font-semibold">{data.name}</h2>
+						<h2 className="">{data.name}</h2>
 						<p className="">Click a node to see details</p>
 					</div>
 				)}

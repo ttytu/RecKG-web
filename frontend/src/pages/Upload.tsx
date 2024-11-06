@@ -183,13 +183,13 @@ const Upload: React.FC = () => {
 		<div className="w-full h-full flex gap-4 flex-col lg:flex-row">
 			<div className="lg:w-[300px]">
 				<div className="flex flex-col gap-4 justify-start sticky top-[72px]">
-					<h1 className="text-2xl font-bold">Upload Your Dataset</h1>
+					<h1 className="">Upload Your Dataset</h1>
 					<p className="">
 						Upload 3 files to create your own RecKG. User-Item interaction data, user attributes, and item attributes are required.
 					</p>
 
 					<div className="flex flex-col gap-4 p-4 bg-layer2">
-						<h3 className="text-lg font-bold">
+						<h3 className="">
 							{data ? "Files Uploaded" : "Upload Files"}
 						</h3>
 						{!data && (
@@ -275,7 +275,7 @@ const Upload: React.FC = () => {
 			</div>
 
 			<div className="grow h-[90vh] p-4 flex flex-col gap-4 bg-layer2">
-				<h2 className="text-xl font-bold">Map Your Dataset</h2>
+				<h2 className="">Map Your Dataset</h2>
 				{data && (
 					<div className="flex flex-col md:flex-row md:justify-between gap-4">
 						<div className="md:w-1/4 flex flex-col gap-2">
@@ -339,11 +339,11 @@ const Upload: React.FC = () => {
 					</div>
 				)}
 				{(!data || loading) && (
-					<div className="flex items-center justify-center h-full">
+					<div className="flex items-center justify-center h-full opacity-50">
 						{loading ? (
-							<p className="text-2xl font-semibold text-zinc-500 animate-pulse">Loading...</p>
+							<h1 className="animate-pulse">Loading...</h1>
 						) : (
-							<p className="text-2xl font-semibold text-zinc-500">Upload dataset to map.</p>
+							<h1 className="">Upload dataset to map</h1>
 						)}
 					</div>
 				)}

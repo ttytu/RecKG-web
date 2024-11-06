@@ -126,11 +126,11 @@ const GraphSVG = () => {
 		<div className="w-full h-full flex gap-4 flex-col lg:flex-row">
 			<div className="lg:w-[300px]">
 				<div className="flex flex-col gap-4 justify-start sticky top-[72px]">
-					<h1 className="text-2xl font-bold">Knowledge Graph</h1>
+					<h1 className="">Knowledge Graph</h1>
 					<p className="">Sample a subgraph of uploaded datasets.</p>
 
 					<div className="flex flex-col gap-4 p-4 bg-layer2">
-						<h3 className="text-lg font-bold">
+						<h3 className="">
 							Select Dataset
 						</h3>
 
@@ -140,12 +140,15 @@ const GraphSVG = () => {
 									<button
 										disabled={loading}
 										onClick={() => handleDataSelection(data)}
-										className={`text-sm w-full flex flex-col p-2 ${selectedDataId === data.id ? 'btn-selected' : 'btn-primary '}`}
+										className={`w-full flex gap-2 p-2 ${selectedDataId === data.id ? 'btn-selected' : 'btn-primary '}`}
 									>
-										<p className="font-semibold">{index + 1}. {data.dataset_name}</p>
-										<p className="text-xs ml-5">
-											{new Date(data.timestamp).toISOString().slice(0, 16).replace('T', ' ')}
-										</p>
+										<p className="font-semibold">{index + 1}. </p>
+										<div className="flex flex-col items-start">
+											<p className="font-semibold">{data.dataset_name}</p>
+											<p className="text-xs">
+												{new Date(data.timestamp).toISOString().slice(0, 16).replace('T', ' ')}
+											</p>
+										</div>
 									</button>
 									<button
 										disabled={loading}
