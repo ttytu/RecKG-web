@@ -184,11 +184,11 @@ const Upload: React.FC = () => {
 			<div className="lg:w-[300px]">
 				<div className="flex flex-col gap-4 justify-start sticky top-[72px]">
 					<h1 className="text-2xl font-bold">Upload Your Dataset</h1>
-					<p className="text-zinc-500">
+					<p className="">
 						Upload 3 files to create your own RecKG. User-Item interaction data, user attributes, and item attributes are required.
 					</p>
 
-					<div className="flex flex-col gap-4 p-4 bg-zinc-800">
+					<div className="flex flex-col gap-4 p-4 bg-layer2">
 						<h3 className="text-lg font-bold">
 							{data ? "Files Uploaded" : "Upload Files"}
 						</h3>
@@ -196,7 +196,7 @@ const Upload: React.FC = () => {
 							<div className="flex flex-col gap-4">
 								<div className="flex flex-col gap-2">
 									<div className="flex flex-col">
-										<label className="text-gray-300">Dataset Name</label>
+										<label className="">Dataset Name</label>
 										<input
 											type="text"
 											required
@@ -204,44 +204,47 @@ const Upload: React.FC = () => {
 											disabled={loading}
 											onChange={handleDatasetNameChange}
 											placeholder="Input Dataset Name"
-											className="bg-zinc-700 px-2 py-1"
+											className="bg-layer3 px-2 py-1"
 										/>
 									</div>
 									<div className="flex flex-col">
-										<label className="text-gray-300">User Attributes File</label>
+										<label className="">User Attributes File</label>
 										<input
 											type="file"
 											accept=".csv"
 											disabled={loading}
 											onChange={handleFileChange("user")}
 											className="
-											bg-zinc-700
+											bg-layer3
+											file:bg-layer4
 											file:px-2 file:py-1
 											file:mr-4 file:p-2 file:border-0 hover:file:opacity-80"
 										/>
 									</div>
 									<div className="flex flex-col">
-										<label className="text-gray-300">Item Attributes File</label>
+										<label className="">Item Attributes File</label>
 										<input
 											type="file"
 											accept=".csv"
 											disabled={loading}
 											onChange={handleFileChange("item")}
 											className="
-											bg-zinc-700
+											bg-layer3
+											file:bg-layer4
 											file:px-2 file:py-1
 											file:mr-4 file:p-2 file:border-0 hover:file:opacity-80"
 										/>
 									</div>
 									<div className="flex flex-col">
-										<label className="text-gray-300">User-Item Interaction File</label>
+										<label className="">User-Item Interaction File</label>
 										<input
 											type="file"
 											accept=".csv"
 											disabled={loading}
 											onChange={handleFileChange("interaction")}
 											className="
-											bg-zinc-700
+											bg-layer3
+											file:bg-layer4
 											file:px-2 file:py-1
 											file:mr-4 file:p-2 file:border-0 hover:file:opacity-80"
 										/>
@@ -271,7 +274,7 @@ const Upload: React.FC = () => {
 				</div>
 			</div>
 
-			<div className="grow h-[90vh] p-4 flex flex-col gap-4 bg-gradient-to-t from-zinc-900 to-zinc-800">
+			<div className="grow h-[90vh] p-4 flex flex-col gap-4 bg-layer2">
 				<h2 className="text-xl font-bold">Map Your Dataset</h2>
 				{data && (
 					<div className="flex flex-col md:flex-row md:justify-between gap-4">

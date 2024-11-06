@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
 	return (
-		<footer className="flex flex-col md:flex-row w-full gap-12 p-4 pt-24 pb-12 mt-24 bg-zinc-900">
+		<footer className="flex flex-col md:flex-row w-full gap-12 p-4 pt-24 pb-12 mt-24 bg-layer1">
 			<div className="font-black text-5xl text-link">
 				<Link to="/">RecKG Web</Link>
 			</div>

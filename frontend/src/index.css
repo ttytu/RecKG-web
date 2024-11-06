@@ -93,19 +93,55 @@
 	}
 
 	label {
-		@apply text-xs mb-1;
+		@apply text-opacity-60 text-xs mb-1;
 	}
 
 	select {
 		@apply text-black dark:text-white bg-white dark:bg-zinc-950;
 	}
 
+	h1 {
+		@apply text-3xl font-black;
+	}
+
+	h2 {
+		@apply text-2xl font-extrabold;
+	}
+
+	h3 {
+		@apply text-xl font-bold;
+	}
+
+	.bg-layer1 {
+		@apply dark:bg-zinc-950 bg-zinc-50;
+	}
+
+	.bg-layer2 {
+		@apply dark:bg-zinc-800 bg-zinc-200;
+	}
+
+	.bg-layer3 {
+		@apply dark:bg-zinc-700 bg-zinc-300;
+	}
+
+	.bg-layer4 {
+		@apply dark:bg-zinc-600 bg-zinc-400;
+	}
+
+	.bg-layer5 {
+		@apply dark:bg-zinc-500 bg-zinc-500;
+	}
+
 	.btn-primary {
-		@apply bg-zinc-700 text-white hover:opacity-80 disabled:opacity-50;
+		@apply bg-layer4 hover:opacity-80 disabled:opacity-50;
+	}
+
+	.btn-selected {
+		@apply bg-layer5 hover:opacity-80 disabled:opacity-50;
 	}
 
 	.btn-transparent {
-		@apply hover:opacity-80;
+		@apply hover:opacity-80 disabled:opacity-50;
 	}
 
 	.btn-red {

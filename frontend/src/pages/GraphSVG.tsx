@@ -127,9 +127,9 @@ const GraphSVG = () => {
 			<div className="lg:w-[300px]">
 				<div className="flex flex-col gap-4 justify-start sticky top-[72px]">
 					<h1 className="text-2xl font-bold">Knowledge Graph</h1>
-					<p className="text-zinc-500">Sample a subgraph of uploaded datasets.</p>
+					<p className="">Sample a subgraph of uploaded datasets.</p>
 
-					<div className="flex flex-col gap-4 p-4 bg-zinc-800">
+					<div className="flex flex-col gap-4 p-4 bg-layer2">
 						<h3 className="text-lg font-bold">
 							Select Dataset
 						</h3>
@@ -140,10 +140,10 @@ const GraphSVG = () => {
 									<button
 										disabled={loading}
 										onClick={() => handleDataSelection(data)}
-										className={`btn-primary text-sm w-full flex flex-col p-2 ${selectedDataId === data.id ? 'bg-zinc-600' : ''}`}
+										className={`text-sm w-full flex flex-col p-2 ${selectedDataId === data.id ? 'btn-selected' : 'btn-primary '}`}
 									>
 										<p className="font-semibold">{index + 1}. {data.dataset_name}</p>
-										<p className="text-xs text-zinc-500">
+										<p className="text-xs ml-5">
 											{new Date(data.timestamp).toISOString().slice(0, 16).replace('T', ' ')}
 										</p>
 									</button>
@@ -173,7 +173,7 @@ const GraphSVG = () => {
 										disabled={loading}
 										onChange={(e) => setNumUsers(parseInt(e.target.value))}
 										placeholder="User Count"
-										className="bg-zinc-700 px-2 py-1 w-full"
+										className="bg-layer3 px-2 py-1 w-full"
 									/>
 								</div>
 								<div className="w-full">
@@ -187,7 +187,7 @@ const GraphSVG = () => {
 										disabled={loading}
 										onChange={(e) => setNumInteractions(parseInt(e.target.value))}
 										placeholder="Interaction Count"
-										className="bg-zinc-700 px-2 py-1 w-full"
+										className="bg-layer3 px-2 py-1 w-full"
 									/>
 								</div>
 							</div>
@@ -212,7 +212,7 @@ const GraphSVG = () => {
 				</div>
 			</div>
 
-			<div className={`grow h-[90vh] relative bg-gradient-to-t from-zinc-900 to-zinc-800`}>
+			<div className={`grow h-[90vh] relative bg-layer2`}>
 				{(!sampledGraph || loading) && (
 					<div className="flex items-center justify-center bg-zinc-500 h-full w-full absolute top-0">
 						{loading ? (

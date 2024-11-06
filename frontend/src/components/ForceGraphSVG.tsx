@@ -290,7 +290,7 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 				{!paramsHidden && (
 					<div className="flex flex-col gap-2 bg-black bg-opacity-30 backdrop-blur-md p-2">
 						<div>
-							<label className="text-gray-300">Link Distance</label>
+							<label className="">Link Distance</label>
 							<input
 								type="range"
 								min="0"
@@ -301,7 +301,7 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 						</div>
 
 						<div>
-							<label className="text-gray-300">Link Strength</label>
+							<label className="">Link Strength</label>
 							<input
 								type="range"
 								min="0"
@@ -313,7 +313,7 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 						</div>
 
 						<div>
-							<label className="text-gray-300">Charge Strength</label>
+							<label className="">Charge Strength</label>
 							<input
 								type="range"
 								min="-100"
@@ -329,13 +329,13 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 				{selectedNode && (
 					<div className="p-4">
 						<h2 className="text-xl font-semibold">{selectedNode.title ?? selectedNode.id}</h2>
-						<p className="text-gray-300">{selectedNode.group}</p>
+						<p className="">{selectedNode.group}</p>
 					</div>
 				)}
 				{!selectedNode && (
 					<div className="p-4">
 						<h2 className="text-xl font-semibold">{data.name}</h2>
-						<p className="text-gray-300">Click a node to see details</p>
+						<p className="">Click a node to see details</p>
 					</div>
 				)}
 			</div>
