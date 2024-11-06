@@ -97,6 +97,31 @@ const GraphSVG = () => {
 		}
 	}
 
+	const handleDownload = async () => {
+		setLoading(true);
+
+		try {
+			const response = await fetch(`http://165.246.21.166/api/download-json/${selectedDataId}`, {
+				method: "GET",
+				headers: {
+					"accept": "application/json",
+				},
+			});
+
+			if (response.ok) {
+				const data = await response.json();
+				console.log("Downloaded data:", data);
+			} else {
+				alert("Failed to download files.");
+			}
+		} catch (error) {
+			console.error("Error downloading files:", error);
+			alert("An error occurred while downloading files.");
+		} finally {
+			setLoading(false);
+		}
+	}
+
 	return (
 		<div className="w-full h-full flex gap-4 flex-col lg:flex-row">
 			<div className="lg:w-[300px]">
@@ -109,36 +134,6 @@ const GraphSVG = () => {
 							Select Dataset
 						</h3>
 
-						<div className="w-full grid grid-cols-2 gap-2">
-							<div className="w-full">
-								<label className="" htmlFor="dataset-name">
-									Number of Users
-								</label>
-								<input
-									type="number"
-									required
-									value={numUsers}
-									disabled={loading}
-									onChange={(e) => setNumUsers(parseInt(e.target.value))}
-									placeholder="User Count"
-									className="bg-zinc-700 px-2 py-1 w-full"
-								/>
-							</div>
-							<div className="w-full">
-								<label className="" htmlFor="">
-									UI Interactions
-								</label>
-								<input
-									type="number"
-									required
-									value={numInteractions}
-									disabled={loading}
-									onChange={(e) => setNumInteractions(parseInt(e.target.value))}
-									placeholder="Interaction Count"
-									className="bg-zinc-700 px-2 py-1 w-full"
-								/>
-							</div>
-						</div>
 						<div className="w-full flex flex-col gap-2">
 							{uploadedData.filter(d => d.has_files === true).map((data, index) => (
 								<div key={data.id} className="relative w-full">
@@ -164,20 +159,62 @@ const GraphSVG = () => {
 								</div>
 							))}
 						</div>
-						<button
-							className="btn-primary p-2"
-							onClick={createGraph}
-							disabled={selectedDataId === "" || loading}
-						>
-							{loading ? 'Sampling Graph...' : 'Sample Graph'}
-						</button>
+
+						<div className="w-full flex flex-col gap-2">
+							<div className="w-full grid grid-cols-2 gap-2">
+								<div className="w-full">
+									<label className="" htmlFor="dataset-name">
+										Number of Users
+									</label>
+									<input
+										type="number"
+										required
+										value={numUsers}
+										disabled={loading}
+										onChange={(e) => setNumUsers(parseInt(e.target.value))}
+										placeholder="User Count"
+										className="bg-zinc-700 px-2 py-1 w-full"
+									/>
+								</div>
+								<div className="w-full">
+									<label className="" htmlFor="">
+										UI Interactions
+									</label>
+									<input
+										type="number"
+										required
+										value={numInteractions}
+										disabled={loading}
+										onChange={(e) => setNumInteractions(parseInt(e.target.value))}
+										placeholder="Interaction Count"
+										className="bg-zinc-700 px-2 py-1 w-full"
+									/>
+								</div>
+							</div>
+
+							<button
+								className="btn-primary p-2"
+								onClick={createGraph}
+								disabled={selectedDataId === "" || loading}
+							>
+								{loading ? 'Sampling Graph...' : 'Sample Graph'}
+							</button>
+
+							<button
+								className="btn-primary p-2"
+								onClick={handleDownload}
+								disabled={selectedDataId === "" || loading}
+							>
+								Download Full KG
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
 
-			<div className={`grow h-[90vh] bg-gradient-to-t from-zinc-900 to-zinc-800`}>
+			<div className={`grow h-[90vh] relative bg-gradient-to-t from-zinc-900 to-zinc-800`}>
 				{(!sampledGraph || loading) && (
-					<div className="flex items-center justify-center h-full">
+					<div className="flex items-center justify-center bg-zinc-500 h-full w-full absolute top-0">
 						{loading ? (
 							<p className="text-2xl font-semibold text-zinc-500 animate-pulse">Loading...</p>
 						) : (
