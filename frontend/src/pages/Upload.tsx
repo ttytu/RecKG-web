@@ -43,7 +43,7 @@ const Upload: React.FC = () => {
 		}
 	);
 
-	const updateData = (type: string, value: string, attr: string) => {
+	const updateData = (type: string, attr: string, value: string) => {
 		switch (type) {
 			case "user":
 				setUserData({
@@ -121,9 +121,10 @@ const Upload: React.FC = () => {
 			if (response.ok) {
 				alert("Files uploaded successfully!");
 
-				const data = await response.json();
-				setData(data);
-				localStorage.setItem("uploadedData", JSON.stringify(data));
+				const dataResponse = await response.json();
+				console.log(dataResponse);
+				setData(dataResponse);
+				localStorage.setItem("uploadedData", JSON.stringify(dataResponse));
 			} else {
 				alert("Failed to upload files.");
 			}
@@ -163,6 +164,7 @@ const Upload: React.FC = () => {
 
 			if (response.ok) {
 				// alert("Data processed successfully!");
+				console.log("Data processed successfully!", response);
 			} else {
 				alert("Failed to process data.");
 			}
@@ -171,97 +173,101 @@ const Upload: React.FC = () => {
 			alert("An error occurred while processing data.");
 		} finally {
 			setLoading(false);
+			setData(null);
+			localStorage.removeItem("uploadedData");
 			window.location.href = "/graph";
 		}
 	};
 
 	return (
 		<div className="w-full h-full flex gap-4 flex-col lg:flex-row">
-			<div className="lg:w-[300px] flex flex-col gap-4 justify-start">
-				<h1 className="text-2xl font-bold">Upload Your Dataset</h1>
-				<p className="text-zinc-500">
-					Upload 3 files to create your own RecKG. User-Item interaction data, user attributes, and item attributes are required.
-				</p>
+			<div className="lg:w-[300px]">
+				<div className="flex flex-col gap-4 justify-start sticky top-[72px]">
+					<h1 className="text-2xl font-bold">Upload Your Dataset</h1>
+					<p className="text-zinc-500">
+						Upload 3 files to create your own RecKG. User-Item interaction data, user attributes, and item attributes are required.
+					</p>
 
-				<div className="flex flex-col gap-4 p-4 bg-zinc-800">
-					<h3 className="text-lg font-bold">
-						{data ? "Files Uploaded" : "Upload Files"}
-					</h3>
-					{!data && (
-						<div className="flex flex-col gap-4">
-							<div className="flex flex-col gap-2">
-								<div className="flex flex-col">
-									<label className="text-gray-300">Dataset Name</label>
-									<input
-										type="text"
-										required
-										value={datasetName}
-										disabled={loading}
-										onChange={handleDatasetNameChange}
-										placeholder="Input Dataset Name"
-										className="bg-zinc-700 px-2 py-1"
-									/>
-								</div>
-								<div className="flex flex-col">
-									<label className="text-gray-300">User Attributes File</label>
-									<input
-										type="file"
-										accept=".csv"
-										disabled={loading}
-										onChange={handleFileChange("user")}
-										className="
+					<div className="flex flex-col gap-4 p-4 bg-zinc-800">
+						<h3 className="text-lg font-bold">
+							{data ? "Files Uploaded" : "Upload Files"}
+						</h3>
+						{!data && (
+							<div className="flex flex-col gap-4">
+								<div className="flex flex-col gap-2">
+									<div className="flex flex-col">
+										<label className="text-gray-300">Dataset Name</label>
+										<input
+											type="text"
+											required
+											value={datasetName}
+											disabled={loading}
+											onChange={handleDatasetNameChange}
+											placeholder="Input Dataset Name"
+											className="bg-zinc-700 px-2 py-1"
+										/>
+									</div>
+									<div className="flex flex-col">
+										<label className="text-gray-300">User Attributes File</label>
+										<input
+											type="file"
+											accept=".csv"
+											disabled={loading}
+											onChange={handleFileChange("user")}
+											className="
 											bg-zinc-700
 											file:px-2 file:py-1
 											file:mr-4 file:p-2 file:border-0 hover:file:opacity-80"
-									/>
-								</div>
-								<div className="flex flex-col">
-									<label className="text-gray-300">Item Attributes File</label>
-									<input
-										type="file"
-										accept=".csv"
-										disabled={loading}
-										onChange={handleFileChange("item")}
-										className="
+										/>
+									</div>
+									<div className="flex flex-col">
+										<label className="text-gray-300">Item Attributes File</label>
+										<input
+											type="file"
+											accept=".csv"
+											disabled={loading}
+											onChange={handleFileChange("item")}
+											className="
 											bg-zinc-700
 											file:px-2 file:py-1
 											file:mr-4 file:p-2 file:border-0 hover:file:opacity-80"
-									/>
-								</div>
-								<div className="flex flex-col">
-									<label className="text-gray-300">User-Item Interaction File</label>
-									<input
-										type="file"
-										accept=".csv"
-										disabled={loading}
-										onChange={handleFileChange("interaction")}
-										className="
+										/>
+									</div>
+									<div className="flex flex-col">
+										<label className="text-gray-300">User-Item Interaction File</label>
+										<input
+											type="file"
+											accept=".csv"
+											disabled={loading}
+											onChange={handleFileChange("interaction")}
+											className="
 											bg-zinc-700
 											file:px-2 file:py-1
 											file:mr-4 file:p-2 file:border-0 hover:file:opacity-80"
-									/>
+										/>
+									</div>
 								</div>
+								<button
+									className="btn-primary p-2"
+									disabled={loading}
+									onClick={handleUpload}
+								>
+									{loading ? "Uploading..." : "Upload"}
+								</button>
 							</div>
+						)}
+						{data && (
 							<button
 								className="btn-primary p-2"
-								disabled={loading}
-								onClick={handleUpload}
+								onClick={() => {
+									setData(null);
+									localStorage.removeItem("uploadedData");
+								}}
 							>
-								{loading ? "Uploading..." : "Upload"}
+								Upload New Files
 							</button>
-						</div>
-					)}
-					{data && (
-						<button
-							className="btn-primary p-2"
-							onClick={() => {
-								setData(null);
-								localStorage.removeItem("uploadedData");
-							}}
-						>
-							Upload New Files
-						</button>
-					)}
+						)}
+					</div>
 				</div>
 			</div>
 
@@ -329,10 +335,15 @@ const Upload: React.FC = () => {
 						</div>
 					</div>
 				)}
-				{!data && (
-					<p className="text-gray-300">Upload files to map your dataset.</p>
+				{(!data || loading) && (
+					<div className="flex items-center justify-center h-full">
+						{loading ? (
+							<p className="text-2xl font-semibold text-zinc-500 animate-pulse">Loading...</p>
+						) : (
+							<p className="text-2xl font-semibold text-zinc-500">Upload dataset to map.</p>
+						)}
+					</div>
 				)}
-
 				<button
 					className="btn-primary p-2 mt-auto"
 					disabled={loading || !data}
