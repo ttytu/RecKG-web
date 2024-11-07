@@ -22,7 +22,7 @@ with open('config.yml') as f:
 app = FastAPI(root_path="/api")
 
 origins = [
-    "http://localhost" ,
+    "http://localhost",
 ]
 
 app.add_middleware(
@@ -118,7 +118,6 @@ async def process_data(data: List[RequestData]):
                     "interaction_list": entry.interaction_data.interaction
                 }
             })
-    
     result = db.data_processing(response_data)
     if result['status'] != 200:
         return result

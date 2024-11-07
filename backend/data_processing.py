@@ -65,74 +65,15 @@ class DataProcessing:
         except Exception as e:
             return {"status": 400, "error": "Couldn't save data file", "details": str(e)}
         
-
     def node_data_processing(self):
-        try:
-            unique_nodes = set()
-            
-            # Process user data
-            for column in self.USER_COLUMNS:
-                col_data = self.mapping_data['user_data'].get(column)
-                if col_data:
-                    for item in self.user_file[col_data]:
-                        if isinstance(item, float) and math.isnan(item):
-                            item = "None"
-                        data = {"id": item, "type": column}
-                        if (data["id"], data["type"]) not in unique_nodes:
-                            self.node_data.append(data)
-                            unique_nodes.add((data["id"], data["type"]))
-
-            has_item_name = self.mapping_data['item_data'].get('item_name')
-            for column in self.ITEM_COLUMNS:
-                col_data = self.mapping_data['item_data'].get(column)
-                if col_data and column != 'item_name':
-                    if column == 'item_id' and has_item_name:
-                        ITEM_NAME_COLUMN = self.mapping_data['item_data']['item_name']
-                        for idx, item in enumerate(self.item_file[col_data]):
-                            if isinstance(item, float) and math.isnan(item):
-                                item = "None"
-                            items = [item] if not (isinstance(item, str) and item.startswith('[')) else literal_eval(item)
-                            for item in items:
-                                item_name = self.item_file[ITEM_NAME_COLUMN][idx]
-                                
-                                if isinstance(item_name, float) and math.isnan(item_name):
-                                    item_name = "None"
-                                data = {"id": item, "type": column, "data": {"item_name": item_name}}
-                                if (data["id"], data["type"]) not in unique_nodes:
-                                    self.node_data.append(data)
-                                    unique_nodes.add((data["id"], data["type"]))
-                    else:
-                        for item in self.item_file[col_data]:
-                            if isinstance(item, float) and math.isnan(item):
-                                item = "None"
-                            items = [item] if not (isinstance(item, str) and item.startswith('[')) else literal_eval(item)
-                            for item in items:
-                                data = {"id": item, "type": column}
-                                if (data["id"], data["type"]) not in unique_nodes:
-                                    self.node_data.append(data)
-                                    unique_nodes.add((data["id"], data["type"]))
-
-            if self.mapping_data['interaction_data']['interaction_list']:
-                for column in self.mapping_data['interaction_data']['interaction_list']:
-                    for item in self.interaction_file[column]:
-                        if isinstance(item, float) and math.isnan(item):
-                            item = "None"
-                        data = {"id": item, "type": column}
-                        if (data["id"], data["type"]) not in unique_nodes:
-                            self.node_data.append(data)
-                            unique_nodes.add((data["id"], data["type"]))
-
-            return {"status": 200}
-        except Exception as e:
-            return {"status": 400, "error": "Node data processing error", "details": str(e)}
-
- #   def node_data_processing(self):
         try:
             unique_nodes = set()
             for column in self.USER_COLUMNS:
                 col_data = self.mapping_data['user_data'].get(column)
                 if col_data:
                     for item in self.user_file[col_data].dropna():
+                        if isinstance(item, float) and math.isnan(item):
+                            item = "None"
                         data = {"id": item, "type": column}
                         if (data["id"], data["type"]) not in unique_nodes:
                             self.node_data.append(data)
@@ -147,7 +88,10 @@ class DataProcessing:
                         for idx, item in enumerate(self.item_file[col_data].dropna()):
                             items = [item] if not (isinstance(item, str) and item.startswith('[')) else literal_eval(item)
                             for item in items:
-                                
+                                if isinstance(self.item_file[ITEM_NAME_COLUMN][idx], float) and math.isnan(self.item_file[ITEM_NAME_COLUMN][idx]):
+                                    self.item_file[ITEM_NAME_COLUMN][idx] = "None"
+                                if isinstance(item, float) and math.isnan(item):
+                                    item = "None"
                                 data = {"id": item, "type": column, "data": {"item_name": self.item_file[ITEM_NAME_COLUMN][idx]}}
                                 if (data["id"], data["type"]) not in unique_nodes:
                                     self.node_data.append(data)
@@ -156,6 +100,8 @@ class DataProcessing:
                         for item in self.item_file[col_data].dropna():
                             items = [item] if not (isinstance(item, str) and item.startswith('[')) else literal_eval(item)
                             for item in items:
+                                if isinstance(item, float) and math.isnan(item):
+                                    item = "None"
                                 data = {"id": item, "type": column}
                                 if (data["id"], data["type"]) not in unique_nodes:
                                     self.node_data.append(data)
@@ -165,6 +111,8 @@ class DataProcessing:
             if self.mapping_data['interaction_data']['interaction_list']:
                 for column in self.mapping_data['interaction_data']['interaction_list']:
                     for item in self.interaction_file[column].dropna():
+                        if isinstance(item, float) and math.isnan(item):
+                            item = "None"
                         data = {"id": item, "type": column}
                         if (data["id"], data["type"]) not in unique_nodes:
                             self.node_data.append(data)
