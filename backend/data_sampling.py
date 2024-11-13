@@ -64,7 +64,7 @@ class DataSampling:
 
     def sampling(self):
         try:
-            interaction_dict = edict({item['type']: {} for item in self.node_data.values()})
+            interaction_dict = {item['type']: {} for item in self.node_data.values()}
             
             for item in self.node_data.values():
                 interaction_dict[item['type']][item['id']] = []
@@ -78,9 +78,8 @@ class DataSampling:
             M_interaction_user = {
                 user_id: interactions
                 for user_id, interactions in interaction_dict['user_id'].items()
-                if len(interactions) == self.M
+                if len(interactions) < self.M
             }
-
             sampled_user_list = random.sample(list(M_interaction_user.keys()), min(self.N, len(M_interaction_user)))
             
             for user_id in sampled_user_list:
