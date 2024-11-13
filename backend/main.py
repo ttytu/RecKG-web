@@ -146,11 +146,11 @@ async def download_json(id: UUID):
     return FileResponse(zip_path, filename="node_edge_files.zip", media_type="application/zip")
 
 @app.get("/sample_data")
-async def process_data(id: UUID, number_of_users: int, number_of_user2item_interaction: int):
+async def process_data(id: UUID, number_of_users: int, number_of_user2item_interaction: int, type_name: str):
     N = number_of_users
     M = number_of_user2item_interaction
     try:
-        sample_data = DataSampling(N, M, id)
+        sample_data = DataSampling(N, M, id, type_name)
         return sample_data.get_data()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

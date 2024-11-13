@@ -13,11 +13,12 @@ except YAMLError:
     raise HTTPException(status_code=500, detail="Error: 'config.yml' file is not properly formatted.")
 
 class DataSampling:
-    def __init__(self, N, M, id):
+    def __init__(self, N, M, id, type_name):
         self.set_random_seed()
         self.DATA_PATH = f"{config.get('storage_path', '.')}/{id}"
         self.N = N
         self.M = M
+        self.type_name = type_name
 
         self.USER_COLUMNS = ['user_id', 'age', 'gender', 'occupation', 'residence']
         self.ITEM_COLUMNS = ['item_id', 'performer', 'type', 'release_date']
@@ -75,15 +76,15 @@ class DataSampling:
                     if source in interaction_dict[key]:
                         interaction_dict[key][source].append(edge)
 
-            M_interaction_user = {
-                user_id: interactions
-                for user_id, interactions in interaction_dict['user_id'].items()
+            M_interaction = {
+                type_name: interactions
+                for type_name, interactions in interaction_dict[self.type_name].items()
                 if len(interactions) < self.M
             }
-            sampled_user_list = random.sample(list(M_interaction_user.keys()), min(self.N, len(M_interaction_user)))
+            sampled_list = random.sample(list(M_interaction.keys()), min(self.N, len(M_interaction)))
             
-            for user_id in sampled_user_list:
-                self.get_sampled_node_list(interaction_dict=interaction_dict, id=user_id, type_info='user_id')
+            for item_id in sampled_list:
+                self.get_sampled_node_list(interaction_dict=interaction_dict, id=item_id, type_info=self.type_name)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Sampling error: {e}")
 
