@@ -74,7 +74,7 @@ class DataProcessing:
                     for item in self.user_file[col_data].dropna():
                         if isinstance(item, float) and math.isnan(item):
                             item = "None"
-                        data = {"id": item, "type": column}
+                        data = {"id": str(item), "type": column}
                         if (data["id"], data["type"]) not in unique_nodes:
                             self.node_data.append(data)
                             unique_nodes.add((data["id"], data["type"]))
@@ -92,7 +92,7 @@ class DataProcessing:
                                     self.item_file[ITEM_NAME_COLUMN][idx] = "None"
                                 if isinstance(item, float) and math.isnan(item):
                                     item = "None"
-                                data = {"id": item, "type": column, "data": {"item_name": self.item_file[ITEM_NAME_COLUMN][idx]}}
+                                data = {"id": str(item), "type": column, "data": {"item_name": self.item_file[ITEM_NAME_COLUMN][idx]}}
                                 if (data["id"], data["type"]) not in unique_nodes:
                                     self.node_data.append(data)
                                     unique_nodes.add((data["id"], data["type"]))
@@ -102,7 +102,7 @@ class DataProcessing:
                             for item in items:
                                 if isinstance(item, float) and math.isnan(item):
                                     item = "None"
-                                data = {"id": item, "type": column}
+                                data = {"id": str(item), "type": column}
                                 if (data["id"], data["type"]) not in unique_nodes:
                                     self.node_data.append(data)
                                     unique_nodes.add((data["id"], data["type"]))
@@ -113,7 +113,7 @@ class DataProcessing:
                     for item in self.interaction_file[column].dropna():
                         if isinstance(item, float) and math.isnan(item):
                             item = "None"
-                        data = {"id": item, "type": column}
+                        data = {"id": str(item), "type": column}
                         if (data["id"], data["type"]) not in unique_nodes:
                             self.node_data.append(data)
                             unique_nodes.add((data["id"], data["type"]))
@@ -130,7 +130,7 @@ class DataProcessing:
                         items = [item] if not (isinstance(item, str) and item.startswith('[')) else literal_eval(item)
                         source = self.user_file[self.mapping_data['user_data']['user_id']][idx]
                         for target in items:
-                            data = {"id": f"{source}_{target}", "source": {"type": column, "data": source}, "target": {"type": column, "data": target}, "target": target, "data": {"relation": RELATION['user'][column]}}
+                            data = {"id": f"{source}_{target}", "source": {"type": column, "data": str(source)}, "target": {"type": column, "data": str(target)}, "data": {"relation": RELATION['user'][column]}}
                             self.edge_data.append(data)
             
             for column in self.ITEM_COLUMNS[1:]:
@@ -140,15 +140,16 @@ class DataProcessing:
                         items = [item] if not (isinstance(item, str) and item.startswith('[')) else literal_eval(item)
                         source = self.item_file[self.mapping_data['item_data']['item_id']][idx]
                         for target in items:
-                            data = {"id": f"{source}_{target}", "source": {"type": "item_id", "data": source}, "target": {"type": column, "data": target}, "data": {"relation": RELATION['item'][column]}}
+                            data = {"id": f"{source}_{target}", "source": {"type": "item_id", "data": str(source)}, "target": {"type": column, "data": str(target)}, "data": {"relation": RELATION['item'][column]}}
                             self.edge_data.append(data)
-
-            if self.mapping_data['interaction_data']['rating']:
+            
+            if self.mapping_data['interaction_data']['rating']:    
                 for user_id, item_id, rating in zip(
                         self.interaction_file[self.mapping_data['interaction_data']['user_id']],
                         self.interaction_file[self.mapping_data['interaction_data']['item_id']],
                         self.interaction_file[self.mapping_data['interaction_data']['rating']]):
-                    data = {"id": f"{user_id}_{item_id}", "source": {"type": "user_id", "data": user_id}, "target": {"type": "item_id", "data": item_id}, "data": {"rating": rating}}
+                    
+                    data = {"id": f"{user_id}_{item_id}", "source": {"type": "user_id", "data": str(user_id)}, "target": {"type": "item_id", "data": str(item_id)}, "data": {"rating": rating}}
                     self.edge_data.append(data)
             return {"status": 200}
         except Exception as e:
