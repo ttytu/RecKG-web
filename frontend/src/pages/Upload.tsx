@@ -110,7 +110,7 @@ const Upload: React.FC = () => {
 		formData.append("interaction_file", interactionFile);
 
 		try {
-			const response = await fetch(`http://165.246.21.166/api/uploadfiles/?dataset_name=${datasetName}`, {
+			const response = await fetch(`${process.env.REACT_APP_URI}/uploadfiles/?dataset_name=${datasetName}`, {
 				method: "POST",
 				headers: {
 					"accept": "application/json",
@@ -153,7 +153,7 @@ const Upload: React.FC = () => {
 		console.log(pData);
 
 		try {
-			const response = await fetch(`http://165.246.21.166/api/process_data/`, {
+			const response = await fetch(`${process.env.REACT_APP_URI}/process_data/`, {
 				method: "POST",
 				headers: {
 					"accept": "application/json",
