@@ -13,12 +13,12 @@ except YAMLError:
     raise HTTPException(status_code=500, detail="Error: 'config.yml' file is not properly formatted.")
 
 class DataSampling:
-    def __init__(self, N, M, id, type_name):
+    def __init__(self, base, N, M, id):
         self.set_random_seed()
         self.DATA_PATH = f"{config.get('storage_path', '.')}/{id}"
+        self.base = base
         self.N = N
         self.M = M
-        self.type_name = type_name
 
         self.USER_COLUMNS = ['user_id', 'age', 'gender', 'occupation', 'residence']
         self.ITEM_COLUMNS = ['item_id', 'performer', 'type', 'release_date']
@@ -65,7 +65,7 @@ class DataSampling:
 
     def sampling(self):
         try:
-            interaction_dict = {item['type']: {} for item in self.node_data.values()}
+            interaction_dict = edict({item['type']: {} for item in self.node_data.values()})
             
             for item in self.node_data.values():
                 interaction_dict[item['type']][item['id']] = []
@@ -77,14 +77,15 @@ class DataSampling:
                         interaction_dict[key][source].append(edge)
 
             M_interaction = {
-                type_name: interactions
-                for type_name, interactions in interaction_dict[self.type_name].items()
-                if len(interactions) < self.M
+                id: interactions
+                for id, interactions in interaction_dict[f'{self.base}_id'].items()
+                if len(interactions) == self.M
             }
+
             sampled_list = random.sample(list(M_interaction.keys()), min(self.N, len(M_interaction)))
             
-            for item_id in sampled_list:
-                self.get_sampled_node_list(interaction_dict=interaction_dict, id=item_id, type_info=self.type_name)
+            for id in sampled_list:
+                self.get_sampled_node_list(interaction_dict=interaction_dict, id=id, type_info=f'{self.base}_id')
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Sampling error: {e}")
 
