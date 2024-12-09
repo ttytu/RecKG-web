@@ -58,7 +58,7 @@ const GraphSVG = () => {
 		setLoading(true);
 
 		try {
-			const response = await fetch(`http://165.246.21.166/api/sample_data?id=${selectedDataId}&number_of_users=${numUsers}&number_of_user2item_interaction=${numInteractions}`)
+			const response = await fetch(`${process.env.REACT_APP_URI}/sample-data?id=${selectedDataId}&number_of_users=${numUsers}&number_of_user2item_interaction=${numInteractions}`)
 			const data = await response.json();
 			console.log('Fetched graph data', data);
 
@@ -76,7 +76,7 @@ const GraphSVG = () => {
 		setLoading(true);
 
 		try {
-			const response = await fetch(`http://165.246.21.166/api/delete-data/${dataID}`, {
+			const response = await fetch(`${process.env.REACT_APP_URI}/delete-data/${dataID}`, {
 				method: "DELETE",
 				headers: {
 					"accept": "application/json",
@@ -99,26 +99,24 @@ const GraphSVG = () => {
 
 	const handleDownload = async () => {
 		setLoading(true);
+		let dLink = "";
 
 		try {
-			const response = await fetch(`http://165.246.21.166/api/download-json/${selectedDataId}`, {
+			const response = await fetch(`${process.env.REACT_APP_URI}/download-json/${selectedDataId}`, {
 				method: "GET",
 				headers: {
 					"accept": "application/json",
 				},
 			});
 
-			if (response.ok) {
-				const data = await response.json();
-				console.log("Downloaded data:", data);
-			} else {
-				alert("Failed to download files.");
-			}
+			console.log('Download response', response);
+			dLink = response.url;
 		} catch (error) {
 			console.error("Error downloading files:", error);
 			alert("An error occurred while downloading files.");
 		} finally {
 			setLoading(false);
+			window.open(dLink, '_blank');
 		}
 	}
 

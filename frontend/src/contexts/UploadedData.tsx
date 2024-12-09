@@ -20,7 +20,7 @@ export const UploadedDataProvider = ({ children }: { children: ReactNode }) => {
 
 	const fetchUploadedData = async () => {
 		try {
-			const response = await fetch('http://165.246.21.166/api/get_id_list');
+			const response = await fetch(`${process.env.REACT_APP_URI}/get-id-list`);
 			const data = await response.json();
 			console.log('Fetched uploaded data', data);
 			setUploadedData(data);
