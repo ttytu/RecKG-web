@@ -7,3 +7,5 @@
 /backend/*.json.gz
 /storage
 /backend/db.py
+
+docker-compose.yml 
