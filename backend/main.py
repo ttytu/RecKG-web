@@ -1,12 +1,10 @@
 import os
-import pandas as pd
 import zipfile
 import shutil
 
-from fastapi import Depends, FastAPI, HTTPException, Security, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.responses import FileResponse
 from typing import List, Optional, Union
 from pydantic import BaseModel
 from uuid import UUID
@@ -47,84 +45,95 @@ class ItemFileEntry(BaseModel):
     type: Union[str, bool]
     release_date: Union[str, bool]
 
-class InteractionFIleEntry(BaseModel):
+class InteractionFileEntry(BaseModel):
     user: Union[str, bool]
     item: Union[str, bool]
     rating: Union[str, bool]
     interaction: Union[List[str], bool, None]
-class RequestData(BaseModel):
-    id: Optional[str]
-    user_data: Optional[UserFileEntry]
-    item_data: Optional[ItemFileEntry]
-    interaction_data: Optional[InteractionFIleEntry]
 
-
-@app.post("/uploadfiles/")
-async def create_upload_file(    
+@app.post("/uploadfiles")
+async def create_upload_file(
     dataset_name: str,
-    user_file: UploadFile = File(...),
-    item_file: UploadFile = File(...),
-    interaction_file: UploadFile = File(...)
+    user_file: Optional[UploadFile] = File(None),
+    item_file: UploadFile = File(None),
+    interaction_file: Optional[UploadFile] = File(None)
 ):
     db = DATABASE()
+    
+    try:
+        user_file_content = None if user_file is None else await user_file.read()
+        interaction_file_content = None if interaction_file is None else await interaction_file.read()
+        item_file_content = await item_file.read()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading files: {str(e)}")
 
-    user_file_content = await user_file.read()
-    await user_file.seek(0)
-    item_file_content = await item_file.read()
-    await item_file.seek(0)
-    interaction_file_content = await interaction_file.read()
-    await interaction_file.seek(0)
+    try:
+        columns_list = db.put_data(
+            dataset_name=dataset_name,
+            user_file=user_file_content,
+            item_file=item_file_content,
+            interaction_file=interaction_file_content
+        )
+        return columns_list
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing files: {str(e)}")
 
-    columns_list = db.put_data(dataset_name = dataset_name,
-                               user_file=user_file_content, 
-                               item_file=item_file_content, 
-                               interaction_file=interaction_file_content)
-    return columns_list
 
-@app.post("/process_data")
-async def process_data(data: List[RequestData]):
+@app.post("/process-data")
+async def process_data(id: UUID, 
+                       item_data: ItemFileEntry, 
+                       user_data: Optional[UserFileEntry] = None, 
+                       interaction_data: Optional[InteractionFileEntry] = None
+):
+
     db = DATABASE()
-
     response_data = {}
-    for entry in data:
-        if entry.id:
-            response_data.update({"id": entry.id})
-        if entry.user_data:
-            response_data.update({
-                "user_data": {
-                    "user_id": entry.user_data.user,
-                    "age": entry.user_data.age,
-                    "gender": entry.user_data.gender,
-                    "occupation": entry.user_data.occupation,
-                    "residence": entry.user_data.residence
-                }
-            })
-        if entry.item_data:
-            response_data.update({
-                "item_data": {
-                    "item_id": entry.item_data.item,
-                    "item_name": entry.item_data.item_name,
-                    "performer": entry.item_data.performer,
-                    "type": entry.item_data.type,
-                    "release_date": entry.item_data.release_date
-                }
-            })
+    try:
+        response_data["id"] = id
 
-        if entry.interaction_data:
-            response_data.update({
-                "interaction_data": {
-                    "user_id": entry.interaction_data.user,
-                    "item_id": entry.interaction_data.item,
-                    "rating": entry.interaction_data.rating,
-                    "interaction_list": entry.interaction_data.interaction
-                }
-            })
-    result = db.data_processing(response_data)
-    if result['status'] != 200:
+        response_data["item_data"] = {
+            "item_id": item_data.item,
+            "item_name": item_data.item_name,
+            "performer": item_data.performer,
+            "type": item_data.type,
+            "release_date": item_data.release_date
+        }
+
+        if user_data:
+            response_data["user_data"] = {
+                "user_id": user_data.user,
+                "age": user_data.age,
+                "gender": user_data.gender,
+                "occupation": user_data.occupation,
+                "residence": user_data.residence
+            }
+        else:
+            response_data["user_data"] = None
+
+        
+        if interaction_data:
+            response_data["interaction_data"] = {
+                "user_id": interaction_data.user,
+                "item_id": interaction_data.item,
+                "rating": interaction_data.rating,
+                "interaction_list": interaction_data.interaction
+            }
+        else:
+            response_data["interaction_data"] = None
+
+        result = db.data_processing(response_data)
+        if result['status'] != 200:
+            raise HTTPException(status_code=400, detail="Data processing failed")
+
+        data_processor = DataProcessing(response_data)
+        result = data_processor.process_data()
+        if result['status'] != 200:
+            raise HTTPException(status_code=500, detail="Error in final data processing")
+        
         return result
 
-    result = DataProcessing(response_data).process_data()
-    return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
 @app.get("/download-json/{id}")
@@ -146,18 +155,19 @@ async def download_json(id: UUID):
         
     return FileResponse(zip_path, filename="node_edge_files.zip", media_type="application/zip")
 
-@app.get("/sample_data")
-async def process_data(id: UUID, number_of_users: int, number_of_user2item_interaction: int):
-    N = number_of_users
-    M = number_of_user2item_interaction
+@app.get("/sample-data")
+async def process_data(id: UUID, base: str, number_of_bases: int, number_of_interactions: int):
+    
+    N = number_of_bases
+    M = number_of_interactions
     try:
-        sample_data = DataSampling(N, M, id)
+        sample_data = DataSampling(base, N, M, id)
         return sample_data.get_data()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
 
-@app.get("/get_id_list")
+@app.get("/get-id-list")
 async def process_data():
     db = DATABASE()
 

@@ -7,3 +7,4 @@
 /backend/*.json.gz
 /storage
 /backend/db.py
+/backend/data

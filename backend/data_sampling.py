@@ -13,9 +13,10 @@ except YAMLError:
     raise HTTPException(status_code=500, detail="Error: 'config.yml' file is not properly formatted.")
 
 class DataSampling:
-    def __init__(self, N, M, id):
+    def __init__(self, base, N, M, id):
         self.set_random_seed()
         self.DATA_PATH = f"{config.get('storage_path', '.')}/{id}"
+        self.base = base
         self.N = N
         self.M = M
 
@@ -75,16 +76,16 @@ class DataSampling:
                     if source in interaction_dict[key]:
                         interaction_dict[key][source].append(edge)
 
-            M_interaction_user = {
-                user_id: interactions
-                for user_id, interactions in interaction_dict['user_id'].items()
+            M_interaction = {
+                id: interactions
+                for id, interactions in interaction_dict[f'{self.base}_id'].items()
                 if len(interactions) == self.M
             }
 
-            sampled_user_list = random.sample(list(M_interaction_user.keys()), min(self.N, len(M_interaction_user)))
+            sampled_list = random.sample(list(M_interaction.keys()), min(self.N, len(M_interaction)))
             
-            for user_id in sampled_user_list:
-                self.get_sampled_node_list(interaction_dict=interaction_dict, id=user_id, type_info='user_id')
+            for id in sampled_list:
+                self.get_sampled_node_list(interaction_dict=interaction_dict, id=id, type_info=f'{self.base}_id')
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Sampling error: {e}")
 
