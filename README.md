@@ -57,7 +57,7 @@ For more information about RecKG, visit [the official RecKG Repository](https://
 }
 ```
 
-### 3. Integration, Visualization & Download of KG
+### 3. Integrate, Visualize & Download KG
 
 - 두개의 KG 통합 
 	- RecKG 형식의 두 데이터셋 통합 기능
