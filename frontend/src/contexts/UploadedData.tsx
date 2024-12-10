@@ -20,7 +20,7 @@ export const UploadedDataProvider = ({ children }: { children: ReactNode }) => {
 
 	const fetchUploadedData = async () => {
 		try {
-			const response = await fetch(`${process.env.REACT_APP_URI}/get-id-list`);
+			const response = await fetch(`${import.meta.env.VITE_API_URI}/get-id-list`);
 			const data = await response.json();
 			console.log('Fetched uploaded data', data);
 			setUploadedData(data);

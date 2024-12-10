@@ -15,7 +15,7 @@ const Upload: React.FC = () => {
 	const [itemFile, setItemFile] = useState<File | null>(null);
 	const [interactionFile, setInteractionFile] = useState<File | null>(null);
 
-	const [data, setData] = useState<any>(localStorage.getItem("uploadedData") ? JSON.parse(localStorage.getItem("uploadedData")!) : null);
+	const [data, setData] = useState<any>(null);
 	const [userData, setUserData] = useState<any>(
 		{
 			"user": false,
@@ -91,8 +91,8 @@ const Upload: React.FC = () => {
 	}
 
 	const handleUpload = async () => {
-		if (!userFile || !itemFile || !interactionFile) {
-			alert("Please upload all 3 files.");
+		if (!itemFile) {
+			alert("Please upload at least an item file");
 			return;
 		}
 
@@ -105,12 +105,15 @@ const Upload: React.FC = () => {
 
 		const formData = new FormData();
 		// formData.append("dataset_name", datasetName);
-		formData.append("user_file", userFile);
 		formData.append("item_file", itemFile);
-		formData.append("interaction_file", interactionFile);
+
+		if (userFile && interactionFile) {
+			formData.append("user_file", userFile);
+			formData.append("interaction_file", interactionFile);
+		}
 
 		try {
-			const response = await fetch(`${process.env.REACT_APP_URI}/uploadfiles/?dataset_name=${datasetName}`, {
+			const response = await fetch(`${import.meta.env.VITE_API_URI}/uploadfiles/?dataset_name=${datasetName}`, {
 				method: "POST",
 				headers: {
 					"accept": "application/json",
@@ -144,16 +147,28 @@ const Upload: React.FC = () => {
 
 		setLoading(true);
 
-		const pData = [{
-			"id": data[0].id,
-			"user_data": userData,
-			"item_data": itemData,
-			"interaction_data": interactionData,
-		}]
-		console.log(pData);
+		var pData: {
+			user_data?: Record<string, boolean>;
+			item_data: Record<string, boolean>;
+			interaction_data?: Record<string, boolean>;
+		};
+
+		if (userData.user && interactionData.user) {
+			pData = {
+				"user_data": userData,
+				"item_data": itemData,
+				"interaction_data": interactionData,
+			}
+			console.log(pData);
+		} else {
+			pData = {
+				"item_data": itemData,
+			}
+			console.log(pData);
+		}
 
 		try {
-			const response = await fetch(`${process.env.REACT_APP_URI}/process_data/`, {
+			const response = await fetch(`${import.meta.env.VITE_API_URI}/process-data?id=${data[0].id}`, {
 				method: "POST",
 				headers: {
 					"accept": "application/json",
@@ -174,10 +189,15 @@ const Upload: React.FC = () => {
 		} finally {
 			setLoading(false);
 			setData(null);
-			localStorage.removeItem("uploadedData");
-			window.location.href = "/graph";
+			// localStorage.removeItem("uploadedData");
+			// window.location.href = "/graph";
 		}
 	};
+
+	useEffect(() => {
+		console.log(data)
+	}
+		, [data]);
 
 	return (
 		<div className="w-full h-full flex gap-4 flex-col lg:flex-row">
@@ -279,36 +299,20 @@ const Upload: React.FC = () => {
 				{data && (
 					<div className="flex flex-col md:flex-row md:justify-between gap-4">
 						<div className="md:w-1/4 flex flex-col gap-2">
-							<h3 className="text-lg font-semibold">User Data</h3>
-							<div className="
-							flex flex-col
-							*:border-b-[1px] *:border-b-zinc-600 *:py-1"
-							>
-								{dataMap.user_data.map((attr: string) => (
-									<div key={attr} className="flex justify-between">
-										<p className="">{attr}</p>
-										<select onChange={(e) => updateData("user", "user", e.target.value)}>
-											<option key="user">{false}</option>
-											{data[1].user_file.map((dataAttr: any) => (
-												<option key={dataAttr}>{dataAttr}</option>
-											))}
-										</select>
-									</div>
-								))}
-							</div>
-						</div>
-						<div className="md:w-1/4 flex flex-col gap-2">
 							<h3 className="text-lg font-semibold">Item Data</h3>
 							<div className="
-							flex flex-col
-							*:border-b-[1px] *:border-b-zinc-600 *:py-1"
+								flex flex-col
+								*:border-b-[1px] *:border-b-zinc-600 *:py-1"
 							>
 								{dataMap.item_data.map((attr: string) => (
 									<div key={attr} className="flex py-1 border-b-[1px] border-zinc-600 justify-between">
 										<p key={attr}>{attr}</p>
 										<select onChange={(e) => updateData("item", attr, e.target.value)}>
 											<option key="item">{false}</option>
-											{data[2].item_file.map((dataAttr: any) => (
+											{data[2] && data[2].item_file.map((dataAttr: any) => (
+												<option key={dataAttr}>{dataAttr}</option>
+											))}
+											{!data[2] && data[1].item_file.map((dataAttr: any) => (
 												<option key={dataAttr}>{dataAttr}</option>
 											))}
 										</select>
@@ -316,26 +320,51 @@ const Upload: React.FC = () => {
 								))}
 							</div>
 						</div>
-						<div className="md:w-1/4 flex flex-col gap-2">
-							<h3 className="text-lg font-semibold">Interaction Data</h3>
-							<div
-								className="
-								flex flex-col
-								*:border-b-[1px] *:border-b-zinc-600 *:py-1"
-							>
-								{dataMap.interaction_data.map((attr: string) => (
-									<div key={attr} className="flex py-1 border-b-[1px] border-zinc-600 justify-between">
-										<p key={attr}>{attr}</p>
-										<select onChange={(e) => updateData("interaction", attr, e.target.value)}>
-											<option key="interaction">{false}</option>
-											{data[3].interaction_file.map((dataAttr: any) => (
-												<option key={dataAttr}>{dataAttr}</option>
-											))}
-										</select>
-									</div>
-								))}
+
+						{data[2] && (
+							<div className="md:w-1/4 flex flex-col gap-2">
+								<h3 className="text-lg font-semibold">User Data</h3>
+								<div className="
+									flex flex-col
+									*:border-b-[1px] *:border-b-zinc-600 *:py-1"
+								>
+									{dataMap.user_data.map((attr: string) => (
+										<div key={attr} className="flex justify-between">
+											<p className="">{attr}</p>
+											<select onChange={(e) => updateData("user", "user", e.target.value)}>
+												<option key="user">{false}</option>
+												{data[1].user_file.map((dataAttr: any) => (
+													<option key={dataAttr}>{dataAttr}</option>
+												))}
+											</select>
+										</div>
+									))}
+								</div>
 							</div>
-						</div>
+						)}
+
+						{data[2] && (
+							<div className="md:w-1/4 flex flex-col gap-2">
+								<h3 className="text-lg font-semibold">Interaction Data</h3>
+								<div
+									className="
+										flex flex-col
+										*:border-b-[1px] *:border-b-zinc-600 *:py-1"
+								>
+									{dataMap.interaction_data.map((attr: string) => (
+										<div key={attr} className="flex py-1 border-b-[1px] border-zinc-600 justify-between">
+											<p key={attr}>{attr}</p>
+											<select onChange={(e) => updateData("interaction", attr, e.target.value)}>
+												<option key="interaction">{false}</option>
+												{data[3].interaction_file.map((dataAttr: any) => (
+													<option key={dataAttr}>{dataAttr}</option>
+												))}
+											</select>
+										</div>
+									))}
+								</div>
+							</div>
+						)}
 					</div>
 				)}
 				{(!data || loading) && (

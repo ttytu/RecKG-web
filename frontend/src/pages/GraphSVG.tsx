@@ -45,6 +45,7 @@ const GraphSVG = () => {
 	const [sampledGraph, setSampledGraph] = useState<Graph>(localStorage.getItem('graphData') ? JSON.parse(localStorage.getItem('graphData') as string) : null);
 	const [selectedDataId, setSelectedDataId] = useState<string>("");
 	const [selectedDataName, setSelectedDataName] = useState<string>("");
+	const [base, setBase] = useState<string>("item");
 	const [numUsers, setNumUsers] = useState<number>(5);
 	const [numInteractions, setNumInteractions] = useState<number>(5);
 
@@ -58,7 +59,9 @@ const GraphSVG = () => {
 		setLoading(true);
 
 		try {
-			const response = await fetch(`${process.env.REACT_APP_URI}/sample-data?id=${selectedDataId}&number_of_users=${numUsers}&number_of_user2item_interaction=${numInteractions}`)
+			const response = await fetch(
+				`${import.meta.env.VITE_API_URI}/sample-data?id=${selectedDataId}&base=${base}&number_of_bases=${numUsers}&number_of_interactions=${numInteractions}`
+			)
 			const data = await response.json();
 			console.log('Fetched graph data', data);
 
@@ -76,7 +79,7 @@ const GraphSVG = () => {
 		setLoading(true);
 
 		try {
-			const response = await fetch(`${process.env.REACT_APP_URI}/delete-data/${dataID}`, {
+			const response = await fetch(`${import.meta.env.VITE_API_URI}/delete-data/${dataID}`, {
 				method: "DELETE",
 				headers: {
 					"accept": "application/json",
@@ -102,7 +105,7 @@ const GraphSVG = () => {
 		let dLink = "";
 
 		try {
-			const response = await fetch(`${process.env.REACT_APP_URI}/download-json/${selectedDataId}`, {
+			const response = await fetch(`${import.meta.env.VITE_API_URI}/download-json/${selectedDataId}`, {
 				method: "GET",
 				headers: {
 					"accept": "application/json",
@@ -165,7 +168,7 @@ const GraphSVG = () => {
 							<div className="w-full grid grid-cols-2 gap-2">
 								<div className="w-full">
 									<label className="" htmlFor="dataset-name">
-										Number of Users
+										Number of Base Nodes
 									</label>
 									<input
 										type="number"
@@ -191,6 +194,20 @@ const GraphSVG = () => {
 										className="bg-layer3 px-2 py-1 w-full"
 									/>
 								</div>
+							</div>
+
+							<div className="w-full">
+								<label className="" htmlFor="dataset-name">
+									Base Node Type
+								</label>
+								<select
+									value={base}
+									onChange={(e) => setBase(e.target.value)}
+									className="bg-layer3 px-2 py-1 w-full"
+								>
+									<option value="item">Item</option>
+									<option value="user">User</option>
+								</select>
 							</div>
 
 							<button
