@@ -112,6 +112,14 @@
 		@apply text-xl font-bold;
 	}
 
+	h4 {
+		@apply text-base font-bold;
+	}
+
+	hr {
+		@apply my-4 opacity-20;
+	}
+
 	.bg-layer1 {
 		@apply dark:bg-zinc-950 bg-zinc-50;
 	}
