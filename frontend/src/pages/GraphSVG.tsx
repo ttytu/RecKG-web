@@ -107,6 +107,7 @@ const GraphSVG = () => {
 		} finally {
 			setLoading(false);
 			fetchUploadedData();
+			setIntegrationMode(false);
 			setSelectedDataId("");
 			setSelectedDataId2("");
 		}
