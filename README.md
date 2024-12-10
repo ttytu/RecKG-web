@@ -59,6 +59,8 @@ For more information about RecKG, visit [the official RecKG Repository](https://
 
 ### 3. Visualization & Download 
 
+- 두개의 KG 통합 
+	- RecKG 형식의 두 데이터셋 통합 기능
 - 데이터 샘플하여 그래프 시각화 
 	- RecKG 형식으로 변환된 데이터셋 D3JS 기반 그래프 시각화 
 		- 유저 혹은 아이템 기반 선택
