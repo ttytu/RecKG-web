@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ForceGraphSVG from "../components/ForceGraphSVG";
 import { useUploadedData } from "../contexts/UploadedData";
 import { create, local, map } from "d3";
+import { useAsyncError } from "react-router-dom";
 
 interface Node {
 	id: string;
@@ -33,7 +34,7 @@ const mapData = (nodes: any[], links: any[], name?: string) => {
 		links: links.map((link) => ({
 			source: link.source.data,
 			target: link.target.data,
-			type: link.type ? link.type : "interacts",
+			type: link.data.relation ? link.data.relation : "",
 			value: link.data.rating ? link.data.rating : null,
 		})),
 	};
@@ -49,10 +50,24 @@ const GraphSVG = () => {
 	const [numUsers, setNumUsers] = useState<number>(5);
 	const [numInteractions, setNumInteractions] = useState<number>(5);
 
+	const [integrationMode, setIntegrationMode] = useState<boolean>(false);
+	const [selectedDataId2, setSelectedDataId2] = useState<string>("");
+
 	const handleDataSelection = (data: any) => {
-		setSelectedDataId(data.id);
-		setSelectedDataName(data.dataset_name);
-		console.log('Selected data', data.id);
+		if (selectedDataId == data.id) {
+			setSelectedDataId("");
+			setSelectedDataId2("");
+			setSelectedDataName("");
+		} else if (!selectedDataId) {
+			setSelectedDataId(data.id);
+			setSelectedDataName(data.dataset_name);
+		} else if (integrationMode) {
+			setSelectedDataId2(data.id)
+		} else {
+			setSelectedDataId(data.id);
+			setSelectedDataName(data.dataset_name);
+		}
+		console.log('Selected data', selectedDataId, selectedDataId2);
 	};
 
 	const createGraph = async () => {
@@ -72,6 +87,28 @@ const GraphSVG = () => {
 			console.error('Failed to fetch graph data', error);
 		} finally {
 			setLoading(false);
+		}
+	}
+
+	const integrateKG = async () => {
+		setLoading(true);
+
+		try {
+			const response = await fetch(
+				`${import.meta.env.VITE_API_URI}/integrate-KG?base_kg_id=${selectedDataId}&added_kg_id=${selectedDataId2}`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+			})
+			console.log(response)
+		} catch (error) {
+			console.error('Failed to fetch graph data', error);
+		} finally {
+			setLoading(false);
+			fetchUploadedData();
+			setSelectedDataId("");
+			setSelectedDataId2("");
 		}
 	}
 
@@ -141,7 +178,7 @@ const GraphSVG = () => {
 									<button
 										disabled={loading}
 										onClick={() => handleDataSelection(data)}
-										className={`w-full flex gap-2 p-2 ${selectedDataId === data.id ? 'btn-selected' : 'btn-primary '}`}
+										className={`w-full flex gap-2 p-2 ${(selectedDataId === data.id) || (selectedDataId2 === data.id) ? 'btn-selected' : 'btn-primary '}`}
 									>
 										<p className="font-semibold">{index + 1}. </p>
 										<div className="flex flex-col items-start">
@@ -165,10 +202,30 @@ const GraphSVG = () => {
 						</div>
 
 						<div className="w-full flex flex-col gap-2">
+							<h4 className="mt-4">KG Integration</h4>
+							<div className="w-full flex gap-2">
+								<button
+									className={`flex-auto p-2 ${integrationMode ? "btn-selected" : "btn-primary"}`}
+									onClick={() => setIntegrationMode(!integrationMode)}
+									disabled={loading}
+								>
+									Integration Mode
+								</button>
+								<button
+									className="flex-auto btn-primary p-2"
+									onClick={integrateKG}
+									disabled={selectedDataId2 === "" || loading}
+								>
+									Integrate KG
+								</button>
+							</div>
+							<hr/>
+
+							<h4 className="mt-4">KG Sampling & Visualization</h4>
 							<div className="w-full grid grid-cols-2 gap-2">
 								<div className="w-full">
 									<label className="" htmlFor="dataset-name">
-										Number of Base Nodes
+										Num. of Base Nodes
 									</label>
 									<input
 										type="number"
@@ -195,7 +252,6 @@ const GraphSVG = () => {
 									/>
 								</div>
 							</div>
-
 							<div className="w-full">
 								<label className="" htmlFor="dataset-name">
 									Base Node Type
@@ -209,22 +265,24 @@ const GraphSVG = () => {
 									<option value="user">User</option>
 								</select>
 							</div>
-
 							<button
 								className="btn-primary p-2"
 								onClick={createGraph}
-								disabled={selectedDataId === "" || loading}
+								disabled={selectedDataId === "" || loading || integrationMode}
 							>
 								{loading ? 'Sampling Graph...' : 'Sample Graph'}
 							</button>
+							<hr />
 
+							<h4 className="mt-4">KG Download</h4>
 							<button
 								className="btn-primary p-2"
 								onClick={handleDownload}
-								disabled={selectedDataId === "" || loading}
+								disabled={selectedDataId === "" || loading || integrationMode}
 							>
 								Download Full KG
 							</button>
+							<hr />
 						</div>
 					</div>
 				</div>
