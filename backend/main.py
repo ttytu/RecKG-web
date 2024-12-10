@@ -10,9 +10,10 @@ from pydantic import BaseModel
 from uuid import UUID
 from yaml import full_load
 from pathlib import Path
-from db import *
+from db import DATABASE
 from data_processing import *
 from data_sampling import *
+from data_integration import *
 
 with open('config.yml') as f:
     file = full_load(f)
@@ -58,8 +59,6 @@ async def create_upload_file(
     item_file: UploadFile = File(None),
     interaction_file: Optional[UploadFile] = File(None)
 ):
-    db = DATABASE()
-    
     try:
         user_file_content = None if user_file is None else await user_file.read()
         interaction_file_content = None if interaction_file is None else await interaction_file.read()
@@ -68,16 +67,17 @@ async def create_upload_file(
         raise HTTPException(status_code=500, detail=f"Error reading files: {str(e)}")
 
     try:
-        columns_list = db.put_data(
-            dataset_name=dataset_name,
-            user_file=user_file_content,
-            item_file=item_file_content,
-            interaction_file=interaction_file_content
-        )
-        return columns_list
+        with DATABASE() as db:
+            columns_list = db.put_data(
+                dataset_name=dataset_name,
+                user_file=user_file_content,
+                item_file=item_file_content,
+                interaction_file=interaction_file_content
+            )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing files: {str(e)}")
 
+    return columns_list
 
 @app.post("/process-data")
 async def process_data(id: UUID, 
@@ -86,7 +86,6 @@ async def process_data(id: UUID,
                        interaction_data: Optional[InteractionFileEntry] = None
 ):
 
-    db = DATABASE()
     response_data = {}
     try:
         response_data["id"] = id
@@ -120,23 +119,25 @@ async def process_data(id: UUID,
             }
         else:
             response_data["interaction_data"] = None
-
-        result = db.data_processing(response_data)
+        
+        with DATABASE() as db:
+            result = db.data_processing(response_data)
+        
         if result['status'] != 200:
-            raise HTTPException(status_code=400, detail="Data processing failed", error_details=result['details'])
+            return result
+            
 
         data_processor = DataProcessing(response_data)
         result = data_processor.process_data()
         
         if result['status'] != 200:
-            raise HTTPException(status_code=500, detail="Error in final data processing", error_details=result['details'])
+            raise HTTPException(status_code=500, detail="Error in final data processing")
         
         return result
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
-
-    
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")        
+        
 @app.get("/download-json/{id}")
 async def download_json(id: UUID):
     base_path = f"{file['storage_path']}/{id}"
@@ -170,10 +171,10 @@ async def process_data(id: UUID, base: str, number_of_bases: int, number_of_inte
 
 @app.get("/get-id-list")
 async def process_data():
-    db = DATABASE()
-
+    
     try:
-        result = db.get_id_list()
+        with DATABASE() as db:
+            result = db.get_id_list()
         for item in result:
             id = item['id']
             folder_path = Path(f"{file['storage_path']}/{id}")
@@ -188,12 +189,14 @@ async def process_data():
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
+    
 
 @app.delete("/delete-data/{id}")
 async def delete_data(id: UUID):
-    db = DATABASE()
+    
     try:
-        db.delete_data(id)
+        with DATABASE() as db:
+            db.delete_data(id)
         folder_path = Path(f"{file['storage_path']}/{id}")
         if folder_path.exists() and folder_path.is_dir():
             shutil.rmtree(folder_path)
@@ -203,3 +206,40 @@ async def delete_data(id: UUID):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while deleting data: {str(e)}")
     
+
+
+@app.post("/integrate-KG")
+async def integrate_KG(base_kg_id: UUID,
+                       added_kg_id: UUID
+):
+    data_integration = DataIntegration()
+    try:
+        with DATABASE() as db:
+            base_kg_columns = db.get_item_columns(base_kg_id)[0][1:]
+            meta_base_columns, meta_base_title = data_integration.get_columns(base_kg_columns, existed=False)
+
+            added_kg_columns = db.get_item_columns(added_kg_id)[0][1:]
+            meta_added_columns, meta_added_title = data_integration.get_columns(added_kg_columns, existed=True)
+            if not (meta_base_columns and meta_added_columns):
+                raise HTTPException(status_code=400, detail="KG 통합 불가")
+            
+            integration_meta_columns = set(meta_added_columns.keys()) & set(meta_base_columns.keys())
+
+            if len(integration_meta_columns) == 0:
+                raise HTTPException(status_code=400, detail="KG 통합 불가")
+
+            integration_meta_columns = {key: meta_added_columns[key] for key in meta_added_columns if key in integration_meta_columns}
+
+            new_item_data = data_integration.integration_data(integration_meta_columns, base_kg_id, added_kg_id, meta_base_title, meta_added_title)
+            result = db.put_data_integrate(new_item_data, base_kg_id, integration_meta_columns, "Integrated KG")
+            if result['status'] != 200:
+                return result
+            
+            data = db.get_mapping_data(result['id'])
+            
+            data_processor = DataProcessing(data)
+            result = data_processor.process_data()
+            return result
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in KG integration: {str(e)}")
