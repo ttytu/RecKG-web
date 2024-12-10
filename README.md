@@ -1,6 +1,8 @@
 ## RecKG Web
 ![image](https://github.com/user-attachments/assets/77a650fa-c4ab-44b9-9b2f-e8faa64ba45f)
 
+Web implementation of the paper "[RecKG: Knowledge Graph for Recommender Systems](https://dl.acm.org/doi/10.1145/3605098.3636009)". 
+
 ## RecKG Web Functions
 
 ### 1. Upload
