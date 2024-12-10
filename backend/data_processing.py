@@ -37,7 +37,7 @@ class DataProcessing:
         result = self.node_data_processing()
         if result['status'] != 200:
             return result
-
+        
         result = self.edge_data_processing()
         if result['status'] != 200:
             return result
@@ -71,7 +71,7 @@ class DataProcessing:
         
     def node_data_processing(self):
         unique_nodes = set()
-            
+        
         try:
             ### item
             has_item_name = self.mapping_data['item_data'].get('item_name')
@@ -109,7 +109,7 @@ class DataProcessing:
                         for item in self.user_file[col_data].dropna():
                             if isinstance(item, float) and math.isnan(item):
                                 item = "None"
-                            data = {"id": item, "type": column}
+                            data = {"id": str(item), "type": column}
                             if (data["id"], data["type"]) not in unique_nodes:
                                 self.node_data.append(data)
                                 unique_nodes.add((data["id"], data["type"]))
@@ -121,10 +121,11 @@ class DataProcessing:
                         for item in self.interaction_file[column].dropna():
                             if isinstance(item, float) and math.isnan(item):
                                 item = "None"
-                            data = {"id": item, "type": column}
+                            data = {"id": str(item), "type": column}
                             if (data["id"], data["type"]) not in unique_nodes:
                                 self.node_data.append(data)
                                 unique_nodes.add((data["id"], data["type"]))
+            
             return {"status": 200}
         except Exception as e:
             return {"status": 400, "error": "Node data processing error", "details": str(e)}
@@ -139,7 +140,7 @@ class DataProcessing:
                         items = [item] if not (isinstance(item, str) and item.startswith('[')) else literal_eval(item)
                         source = self.item_file[self.mapping_data['item_data']['item_id']][idx]
                         for target in items:
-                            data = {"id": f"{source}_{target}", "source": {"type": "item_id", "data": str(source)}, "target": {"type": column, "data": str(target)}, "data": {"relation": RELATION['item'][column]}}
+                            data = {"id": f"{source}_{target}", "source": {"type": "item_id", "data": str(source)}, "target": {"type": column, "data": str(target)}, "data": {"relation": str(RELATION['item'][column])}}
                             self.edge_data.append(data)
             
             ### user
@@ -151,7 +152,7 @@ class DataProcessing:
                             items = [item] if not (isinstance(item, str) and item.startswith('[')) else literal_eval(item)
                             source = self.user_file[self.mapping_data['user_data']['user_id']][idx]
                             for target in items:
-                                data = {"id": f"{source}_{target}", "source": {"type": column, "data": str(source)}, "target": {"type": column, "data": str(target)}, "target": str(target), "data": {"relation": RELATION['user'][column]}}
+                                data = {"id": f"{source}_{target}", "source": {"type": 'user_id', "data": str(source)}, "target": {"type": column, "data": str(target)}, "data": {"relation": str(RELATION['user'][column])}}
                                 self.edge_data.append(data)
             
             ### interaction

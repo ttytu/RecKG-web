@@ -1,5 +1,6 @@
 import random
 import json
+import os
 from easydict import EasyDict as edict
 from yaml import full_load, YAMLError
 from fastapi import HTTPException
@@ -19,10 +20,6 @@ class DataSampling:
         self.base = base
         self.N = N
         self.M = M
-
-        self.USER_COLUMNS = ['user_id', 'age', 'gender', 'occupation', 'residence']
-        self.ITEM_COLUMNS = ['item_id', 'performer', 'type', 'release_date']
-        self.INTERACTION_COLUMNS = ['user_id', 'item_id', 'rating', 'interaction_list']
         
         self.sampled_edge_data = []
         self.sampled_node_data = []
@@ -30,10 +27,30 @@ class DataSampling:
         self.id_set = set()
 
         try:    
-            self.load_and_index_json()
-            self.sampling()
+            if not self.existed_file_check():
+                self.load_and_index_json()
+                self.sampling()
+                if len(self.sampled_node_data) > 0:
+                    self.save_json()
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Initialization error: {e}")
+
+    def existed_file_check(self):
+        try:
+            with open(f'{self.DATA_PATH}/sampled_{self.base}_{self.N}_{self.M}_node.json', 'r', encoding='utf-8') as f:
+                self.sampled_node_data = json.load(f)
+            with open(f'{self.DATA_PATH}/sampled_{self.base}_{self.N}_{self.M}_edge.json', 'r', encoding='utf-8') as f:
+                self.sampled_edge_data = json.load(f)
+            return True
+
+        except FileNotFoundError:
+            self.sampled_edge_data = []
+            self.sampled_node_data = []
+            return False
+        except json.JSONDecodeError:
+            self.sampled_edge_data = []
+            self.sampled_node_data = []
+            return False
 
     def set_random_seed(self):
         random.seed(42)
@@ -45,7 +62,16 @@ class DataSampling:
             "sampled_node_data": self.sampled_node_data,
             "sampled_edge_data": self.sampled_edge_data
         }
-
+    def save_json(self):
+        try:
+            with open(f'{self.DATA_PATH}/sampled_{self.base}_{self.N}_{self.M}_node.json', 'w', encoding='utf-8') as f:
+                json.dump(self.sampled_node_data, f, ensure_ascii=False, indent=4)
+            with open(f'{self.DATA_PATH}/sampled_{self.base}_{self.N}_{self.M}_edge.json', 'w', encoding='utf-8') as f:
+                json.dump(self.sampled_edge_data, f, ensure_ascii=False, indent=4)
+            return {"status": 200}
+        except Exception as e:
+            return {"status": 400, "error": "Couldn't save data file", "details": str(e)}
+        
     def load_and_index_json(self):
         try:
             with open(f'{self.DATA_PATH}/node.json', 'r', encoding='utf-8') as f:
@@ -68,7 +94,7 @@ class DataSampling:
             interaction_dict = edict({item['type']: {} for item in self.node_data.values()})
             
             for item in self.node_data.values():
-                interaction_dict[item['type']][item['id']] = []
+                interaction_dict[item['type']][str(item['id'])] = []
 
             for edge in self.edge_data:
                 source = edge['source']['data']
@@ -79,13 +105,14 @@ class DataSampling:
             M_interaction = {
                 id: interactions
                 for id, interactions in interaction_dict[f'{self.base}_id'].items()
-                if len(interactions) == self.M
+                if len(interactions) < self.M and len(interactions) > 0
             }
 
             sampled_list = random.sample(list(M_interaction.keys()), min(self.N, len(M_interaction)))
             
             for id in sampled_list:
                 self.get_sampled_node_list(interaction_dict=interaction_dict, id=id, type_info=f'{self.base}_id')
+            
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Sampling error: {e}")
 

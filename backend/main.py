@@ -123,19 +123,20 @@ async def process_data(id: UUID,
 
         result = db.data_processing(response_data)
         if result['status'] != 200:
-            raise HTTPException(status_code=400, detail="Data processing failed")
+            raise HTTPException(status_code=400, detail="Data processing failed", error_details=result['details'])
 
         data_processor = DataProcessing(response_data)
         result = data_processor.process_data()
+        
         if result['status'] != 200:
-            raise HTTPException(status_code=500, detail="Error in final data processing")
+            raise HTTPException(status_code=500, detail="Error in final data processing", error_details=result['details'])
         
         return result
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
-
+    
 @app.get("/download-json/{id}")
 async def download_json(id: UUID):
     base_path = f"{file['storage_path']}/{id}"
