@@ -101,6 +101,7 @@ class DataProcessing:
                                 if (data["id"], data["type"]) not in unique_nodes:
                                     self.node_data.append(data)
                                     unique_nodes.add((data["id"], data["type"]))
+            
             ### user
             if self.mapping_data['user_data']:
                 for column in self.USER_COLUMNS:
