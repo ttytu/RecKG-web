@@ -164,4 +164,12 @@
 	.text-link {
 		@apply hover:opacity-70;
 	}
+
+	th {
+		@apply text-center border-white border-[1px] border-opacity-30;
+	}
+
+	td {
+		@apply text-center border-white border-[1px] border-opacity-30;
+	}
 }
