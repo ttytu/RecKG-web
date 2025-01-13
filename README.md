@@ -3,7 +3,7 @@
 
 Web implementation of the paper "[RecKG: Knowledge Graph for Recommender Systems](https://dl.acm.org/doi/10.1145/3605098.3636009)".  
 For more information about RecKG, visit [the official RecKG Repository](https://github.com/tree-jhk/RecKG).  
-You can download RecKG paper from [arxiv](https://arxiv.org/abs/2501.03598)
+You can download RecKG paper from [arxiv](https://arxiv.org/abs/2501.03598). 
 
 ## RecKG Web Functionalities 
 
