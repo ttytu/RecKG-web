@@ -1,35 +1,36 @@
 ## RecKG Web
+
 ![image](https://github.com/user-attachments/assets/77a650fa-c4ab-44b9-9b2f-e8faa64ba45f)
 
 Web implementation of the paper "[RecKG: Knowledge Graph for Recommender Systems](https://dl.acm.org/doi/10.1145/3605098.3636009)".  
 For more information about RecKG, visit [the official RecKG Repository](https://github.com/tree-jhk/RecKG).  
-You can download RecKG paper from [arxiv](https://arxiv.org/abs/2501.03598). 
+You can download RecKG paper from [arxiv](https://arxiv.org/abs/2501.03598).
 
-## RecKG Web Functionalities 
+## RecKG Web Functionalities
 
 ### 1. Upload
 
-- 사용자가 추천 데이터셋을 사용자 정보/아이템 정보/인터랙션 정보 각각의 CSV 파일로 업로드
-	- 각 파일의 헤더는 RecKG 형식으로 변환하고자 하는 애트리뷰트 명
-	- 예시 아이템 정보 헤더 (MovieLens)
-		- movie_id
-		- movie_title 
-		- release_date 
-		- video_release_date 
-		- imdb_url 
-		- genre_list 
+- Users can upload recommendation datasets as separate CSV files for user data, item data, and interaction data.
+  - Each file’s header should represent the attribute names to be converted into the RecKG format.
+  - Example item data headers (MovieLens):
+    - `movie_id`
+    - `movie_title`
+    - `release_date`
+    - `video_release_date`
+    - `imdb_url`
+    - `genre_list`
 
 ### 2. Map
 
-- RecKG 형식에 맞춰 각각 파일 데이터 애트리뷰트 매핑
-	- 예시 아이템 정보 매핑 
-		- movie_id -> item
-		- movie_title -> item_name 
-		- video_release_date -> release_date 
-		- type -> genre_list 
-- 매핑 후 데이터 RecKG 형식으로 변환 
+- Map attributes from the uploaded files to match the RecKG format.
+  - Example item data mapping:
+    - `movie_id` → `item`
+    - `movie_title` → `item_name`
+    - `video_release_date` → `release_date`
+    - `type` → `genre_list`
+- After mapping, convert the dataset into the RecKG format.
 
-#### RecKG 데이터 형식 
+#### RecKG Data Format
 
 ```json
 {
@@ -60,11 +61,15 @@ You can download RecKG paper from [arxiv](https://arxiv.org/abs/2501.03598).
 
 ### 3. Integrate, Visualize & Download KG
 
-- 두개의 KG 통합 
-	- RecKG 형식의 두 데이터셋 통합 기능
-- 데이터 샘플하여 그래프 시각화 
-	- RecKG 형식으로 변환된 데이터셋 D3JS 기반 그래프 시각화 
-		- 유저 혹은 아이템 기반 선택
-		- 초기 노드 수 설정
-		- 최대 인터랙션 수 설정 
-- RecKG 형식으로 프로세스 된 데이터셋 다운로드 기능
+- Integrate Two KGs
+  - Functionality to merge two datasets in the RecKG format.
+
+- Graph Visualization of Sample Data
+  - Visualize the transformed dataset using D3.js.
+  - Users can choose between a user-based or item-based view.
+  - Options to set:
+    - Initial number of nodes
+    - Maximum number of interactions
+
+- Download Processed RecKG Data
+  - Provides an option to download the dataset in RecKG format after processing.
