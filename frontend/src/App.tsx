@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { Navigate } from 'react-router-dom'
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 import './App.css'
 
@@ -13,7 +13,7 @@ import Upload from './pages/Upload'
 import { useUploadedData } from './contexts/UploadedData'
 
 function App() {
-	const { uploadedData, fetchUploadedData } = useUploadedData()
+	const { fetchUploadedData } = useUploadedData()
 
 	useEffect(() => {
 		fetchUploadedData()
