@@ -2,7 +2,8 @@
 ![image](https://github.com/user-attachments/assets/77a650fa-c4ab-44b9-9b2f-e8faa64ba45f)
 
 Web implementation of the paper "[RecKG: Knowledge Graph for Recommender Systems](https://dl.acm.org/doi/10.1145/3605098.3636009)".  
-For more information about RecKG, visit [the official RecKG Repository](https://github.com/tree-jhk/RecKG).
+For more information about RecKG, visit [the official RecKG Repository](https://github.com/tree-jhk/RecKG).  
+You can download RecKG paper from [arxiv](https://arxiv.org/abs/2501.03598). 
 
 ## RecKG Web Functionalities 
 
@@ -57,7 +58,7 @@ For more information about RecKG, visit [the official RecKG Repository](https://
 }
 ```
 
-### 3. Integration, Visualization & Download of KG
+### 3. Integrate, Visualize & Download KG
 
 - 두개의 KG 통합 
 	- RecKG 형식의 두 데이터셋 통합 기능

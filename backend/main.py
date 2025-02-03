@@ -228,10 +228,15 @@ async def integrate_KG(base_kg_id: UUID,
             if len(integration_meta_columns) == 0:
                 raise HTTPException(status_code=400, detail="KG 통합 불가")
 
+
+            base_file_name = db.get_file_name(base_kg_id)
+            added_file_name = db.get_file_name(added_kg_id)
+
             integration_meta_columns = {key: meta_added_columns[key] for key in meta_added_columns if key in integration_meta_columns}
 
             new_item_data = data_integration.integration_data(integration_meta_columns, base_kg_id, added_kg_id, meta_base_title, meta_added_title)
-            result = db.put_data_integrate(new_item_data, base_kg_id, integration_meta_columns, "Integrated KG")
+            
+            result = db.put_data_integrate(new_item_data, base_kg_id, integration_meta_columns, f"integrated {base_file_name}-KG by {added_file_name}-KG")
             if result['status'] != 200:
                 return result
             
@@ -239,6 +244,7 @@ async def integrate_KG(base_kg_id: UUID,
             
             data_processor = DataProcessing(data)
             result = data_processor.process_data()
+            result['added_columns'] = integration_meta_columns
             return result
 
     except Exception as e:

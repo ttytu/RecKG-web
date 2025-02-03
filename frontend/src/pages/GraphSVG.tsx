@@ -52,17 +52,20 @@ const GraphSVG = () => {
 
 	const [integrationMode, setIntegrationMode] = useState<boolean>(false);
 	const [selectedDataId2, setSelectedDataId2] = useState<string>("");
+	const [selectedDataName2, setSelectedDataName2] = useState<string>("");
 
 	const handleDataSelection = (data: any) => {
 		if (selectedDataId == data.id) {
 			setSelectedDataId("");
 			setSelectedDataId2("");
 			setSelectedDataName("");
+			setSelectedDataName2("");
 		} else if (!selectedDataId) {
 			setSelectedDataId(data.id);
 			setSelectedDataName(data.dataset_name);
 		} else if (integrationMode) {
 			setSelectedDataId2(data.id)
+			setSelectedDataName2(data.dataset_name);
 		} else {
 			setSelectedDataId(data.id);
 			setSelectedDataName(data.dataset_name);
@@ -101,7 +104,15 @@ const GraphSVG = () => {
 					"Content-Type": "application/json",
 				},
 			})
-			console.log(response)
+			const rData = await response.json()
+			console.log(rData.added_columns)
+			if (rData.added_columns && typeof rData.added_columns === 'object') {
+				const formattedColumns = Object.entries(rData.added_columns)
+					.map(([key, value]) => `${value}`)
+					.join('\n');
+
+				alert(`Added Columns:\n${formattedColumns}`);
+			}
 		} catch (error) {
 			console.error('Failed to fetch graph data', error);
 		} finally {
@@ -204,9 +215,34 @@ const GraphSVG = () => {
 
 						<div className="w-full flex flex-col gap-2">
 							<h4 className="mt-4">KG Integration</h4>
+							{integrationMode &&
+								<div className="bg-layer3 w-full p-2 flex flex-col gap-2">
+									<span>
+										Select base KG and additional KG for integration.
+									</span>
+									<table className="w-full">
+										<thead>
+											<tr>
+												<th className="w-1/2">Base</th>
+												<th className="w-1/2">Additional</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td className="w-1/2">
+													{selectedDataName ? selectedDataName : "-"}
+												</td>
+												<td className="w-1/2">
+													{selectedDataName2 ? selectedDataName2 : "-"}
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							}
 							<div className="w-full flex gap-2">
 								<button
-									className={`flex-auto p-2 ${integrationMode ? "btn-selected" : "btn-primary"}`}
+									className={`flex-auto p-2 ${integrationMode ? "btn-selected bg-blue-800" : "btn-primary"}`}
 									onClick={() => setIntegrationMode(!integrationMode)}
 									disabled={loading}
 								>
@@ -217,10 +253,10 @@ const GraphSVG = () => {
 									onClick={integrateKG}
 									disabled={selectedDataId2 === "" || loading}
 								>
-									Integrate KG
+									Integrate KGs
 								</button>
 							</div>
-							<hr/>
+							<hr />
 
 							<h4 className="mt-4">KG Sampling & Visualization</h4>
 							<div className="w-full grid grid-cols-2 gap-2">

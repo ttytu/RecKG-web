@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useUploadedData } from "../contexts/UploadedData";
+import React, { useState,  } from "react";
+
 
 const dataMap = {
 	"user_data": ["user", "age", "gender", "occupation", "residence"],
@@ -176,6 +176,7 @@ const Upload: React.FC = () => {
 				},
 				body: JSON.stringify(pData),
 			});
+			console.log(pData);
 
 			if (response.ok) {
 				// alert("Data processed successfully!");
@@ -190,14 +191,14 @@ const Upload: React.FC = () => {
 			setLoading(false);
 			setData(null);
 			// localStorage.removeItem("uploadedData");
-			// window.location.href = "/graph";
+			window.location.href = "/graph";
 		}
 	};
 
-	useEffect(() => {
-		console.log(data)
-	}
-		, [data]);
+	// useEffect(() => {
+	// 	console.log(data)
+	// }
+	// 	, [data]);
 
 	return (
 		<div className="w-full h-full flex gap-4 flex-col lg:flex-row">
@@ -331,7 +332,7 @@ const Upload: React.FC = () => {
 									{dataMap.user_data.map((attr: string) => (
 										<div key={attr} className="flex justify-between">
 											<p className="">{attr}</p>
-											<select onChange={(e) => updateData("user", "user", e.target.value)}>
+											<select onChange={(e) => updateData("user", attr, e.target.value)}>
 												<option key="user">{false}</option>
 												{data[1].user_file.map((dataAttr: any) => (
 													<option key={dataAttr}>{dataAttr}</option>
