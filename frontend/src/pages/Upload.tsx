@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useUploadedData } from "../contexts/UploadedData";
+import React, { useState,  } from "react";
+
 
 const dataMap = {
 	"user_data": ["user", "age", "gender", "occupation", "residence"],
