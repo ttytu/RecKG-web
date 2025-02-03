@@ -25,4 +25,4 @@ dist-ssr
 
 .env
 
-.out
+*.out
