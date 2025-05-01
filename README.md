@@ -73,3 +73,7 @@ Web implementation of the paper "[RecKG: Knowledge Graph for Recommender Systems
 
 - Download Processed RecKG Data
   - Provides an option to download the dataset in RecKG format after processing.
+
+## Video Example 
+
+https://github.com/user-attachments/assets/355014dd-0d85-4d00-afab-752e8b752f25
