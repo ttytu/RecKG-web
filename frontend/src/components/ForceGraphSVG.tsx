@@ -248,12 +248,12 @@ const ForceGraphSVG: React.FC<ForceGraphProps> = ({ data }) => {
 			node.attr("cx", (d) => d.x!).attr("cy", (d) => d.y!);
 
 			svg.selectAll(".link-labels text")
-				.attr("x", (d) => ((d.source as Node).x! + (d.target as Node).x!) / 2)
-				.attr("y", (d) => ((d.source as Node).y! + (d.target as Node).y!) / 2);
+				.attr("x", (d: Link) => ((d.source as Node).x! + (d.target as Node).x!) / 2)
+				.attr("y", (d: Link) => ((d.source as Node).y! + (d.target as Node).y!) / 2);
 
 			svg.selectAll(".node-labels text")
-				.attr("x", (d) => d.x!)
-				.attr("y", (d) => d.y!);
+				.attr("x", (d: Node) => d.x!)
+				.attr("y", (d: Node) => d.y!);
 		});
 
 		// Cleanup function to stop the simulation when the component unmounts

@@ -1,5 +1,4 @@
-@tailwind base;
-@tailwind components;
+@import "tailwindcss";
 @tailwind utilities;
 
 
@@ -93,7 +92,7 @@
 	}
 
 	label {
-		@apply text-opacity-60 text-xs mb-1;
+		@apply text-black/60 dark:text-white/60 text-xs mb-1;
 	}
 
 	select {
@@ -141,11 +140,11 @@
 	}
 
 	.btn-primary {
-		@apply bg-layer4 hover:opacity-80 disabled:opacity-50;
+		@apply dark:bg-zinc-600 bg-zinc-400 hover:opacity-80 disabled:opacity-50;
 	}
 
 	.btn-selected {
-		@apply bg-layer5 hover:opacity-80 disabled:opacity-50;
+		@apply dark:bg-zinc-500 bg-zinc-500 hover:opacity-80 disabled:opacity-50;
 	}
 
 	.btn-transparent {
@@ -166,10 +165,10 @@
 	}
 
 	th {
-		@apply text-center border-white border-[1px] border-opacity-30;
+		@apply text-center border-white/30 border-[1px];
 	}
 
 	td {
-		@apply text-center border-white border-[1px] border-opacity-30;
+		@apply text-center border-white/30 border-[1px];
 	}
 }
