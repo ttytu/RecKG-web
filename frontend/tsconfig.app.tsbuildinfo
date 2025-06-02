@@ -1,1 +1,17 @@
-{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/Footer.tsx","./src/components/ForceGraph.tsx","./src/components/ForceGraphSVG.tsx","./src/components/NavBar.tsx","./src/contexts/UploadedData.tsx","./src/pages/GraphSVG.tsx","./src/pages/Home.tsx","./src/pages/Upload.tsx","./src/workers/ForceWorker.tsx"],"errors":true,"version":"5.6.3"}
+{
+	"root": [
+		"./src/App.tsx",
+		"./src/main.tsx",
+		"./src/vite-env.d.ts",
+		"./src/components/Footer.tsx",
+		"./src/components/ForceGraph.tsx",
+		"./src/components/ForceGraphSVG.tsx",
+		"./src/components/NavBar.tsx",
+		"./src/contexts/UploadedData.tsx",
+		"./src/pages/GraphSVG.tsx",
+		"./src/pages/Home.tsx",
+		"./src/pages/Upload.tsx",
+		"./src/workers/ForceWorker.tsx"
+	],
+	"version": "5.7.3"
+}
