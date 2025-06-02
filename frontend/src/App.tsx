@@ -20,7 +20,7 @@ function App() {
 	}, [])
 
 	return (
-			<Router>
+			<Router basename='/recKG'>
 				<NavBar />
 
 				<div className={`mx-auto p-4 text-sm`}>
@@ -28,7 +28,7 @@ function App() {
 						<Route path="/" element={<Home />} />
 						<Route path="/upload" element={<Upload />} />
 						<Route path="/graph" element={<GraphSVG />} />
-						<Route path="*" element={<Navigate to="/" />} />
+						{/* <Route path="*" element={<Navigate to="/" />} /> */}
 					</Routes>
 				</div>
 
