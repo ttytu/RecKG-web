@@ -191,7 +191,7 @@ const Upload: React.FC = () => {
 			setLoading(false);
 			setData(null);
 			// localStorage.removeItem("uploadedData");
-			window.location.href = "/graph";
+			window.location.href = "recKG/graph";
 		}
 	};
 
