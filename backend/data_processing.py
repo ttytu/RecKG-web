@@ -23,8 +23,8 @@ class DataProcessing:
         self.mapping_data = mapping_data
         self.DATA_PATH = f"{config['storage_path']}/{mapping_data['id']}"
         self.ITEM_COLUMNS = list(mapping_data['item_data'].keys())
-        self.USER_COLUMNS = list(mapping_data['user_data'].keys()) if mapping_data['user_data'] else []
-        self.INTERACTION_COLUMNS = list(mapping_data['interaction_data'].keys()) if mapping_data['interaction_data'] else []
+        self.USER_COLUMNS = list(mapping_data['user_data'].keys()) if 'user_data' in mapping_data else []
+        self.INTERACTION_COLUMNS = list(mapping_data['interaction_data'].keys()) if 'interaction_data' in mapping_data else []
         self.node_data = []
         self.edge_data = []
 
@@ -103,7 +103,7 @@ class DataProcessing:
                                     unique_nodes.add((data["id"], data["type"]))
             
             ### user
-            if self.mapping_data['user_data']:
+            if 'user_data' in self.mapping_data:
                 for column in self.USER_COLUMNS:
                     col_data = self.mapping_data['user_data'].get(column)
                     if col_data:
@@ -116,7 +116,7 @@ class DataProcessing:
                                 unique_nodes.add((data["id"], data["type"]))
 
             ### interaction
-            if self.mapping_data['interaction_data']:
+            if 'interaction_data' in self.mapping_data:
                 if self.mapping_data['interaction_data']['interaction_list']:
                     for column in self.mapping_data['interaction_data']['interaction_list']:
                         for item in self.interaction_file[column].dropna():
@@ -145,7 +145,7 @@ class DataProcessing:
                             self.edge_data.append(data)
             
             ### user
-            if self.mapping_data['user_data']:
+            if 'user_data' in self.mapping_data:
                 for column in self.USER_COLUMNS[1:]:
                     col_data = self.mapping_data['user_data'].get(column)
                     if col_data:
@@ -157,7 +157,7 @@ class DataProcessing:
                                 self.edge_data.append(data)
             
             ### interaction
-            if self.mapping_data['interaction_data']:
+            if 'interaction_data' in self.mapping_data:
                 if self.mapping_data['interaction_data']['rating']:
                     for user_id, item_id, rating in zip(
                             self.interaction_file[self.mapping_data['interaction_data']['user_id']],
