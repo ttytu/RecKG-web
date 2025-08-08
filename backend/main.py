@@ -1,6 +1,8 @@
 import os
 import zipfile
 import shutil
+import traceback, uuid, logging
+
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,13 +17,17 @@ from data_processing import *
 from data_sampling import *
 from data_integration import *
 
+logger = logging.getLogger(__name__)
+
+
 with open('config.yml') as f:
     file = full_load(f)
 
-app = FastAPI(root_path="/api")
+app = FastAPI(root_path="/recKG/api")
 
 origins = [
     "http://localhost",
+    "https://ukta.inha.ac.kr",
 ]
 
 app.add_middleware(
@@ -52,6 +58,16 @@ class InteractionFileEntry(BaseModel):
     rating: Union[str, bool]
     interaction: Union[List[str], bool, None]
 
+def format_traceback(e: Exception, msg: str = "") -> dict:
+    tb = traceback.format_exception(type(e), e, e.__traceback__)
+    return {
+        "error": msg or str(e),
+        "type": e.__class__.__name__,
+        "message": str(e),
+        "args": e.args,
+        "traceback": tb[-10:]
+    }
+
 @app.post("/uploadfiles")
 async def create_upload_file(
     dataset_name: str,
@@ -64,7 +80,7 @@ async def create_upload_file(
         interaction_file_content = None if interaction_file is None else await interaction_file.read()
         item_file_content = await item_file.read()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error reading files: {str(e)}")
+        raise HTTPException(status_code=500, detail=format_traceback(e, "Error reading files"))
 
     try:
         with DATABASE() as db:
@@ -75,21 +91,22 @@ async def create_upload_file(
                 interaction_file=interaction_file_content
             )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing files: {str(e)}")
+        raise HTTPException(status_code=500, detail=format_traceback(e, "Error processing files"))
 
     return columns_list
+
 
 @app.post("/process-data")
 async def process_data(id: UUID, 
                        item_data: ItemFileEntry, 
                        user_data: Optional[UserFileEntry] = None, 
-                       interaction_data: Optional[InteractionFileEntry] = None
-):
-
-    response_data = {}
+                       interaction_data: Optional[InteractionFileEntry] = None):
     try:
-        response_data["id"] = id
+        logger.info(f"Starting data processing for ID: {id}")
 
+        response_data = {"id": id}
+
+        # Item data
         response_data["item_data"] = {
             "item_id": item_data.item,
             "item_name": item_data.item_name,
@@ -97,81 +114,100 @@ async def process_data(id: UUID,
             "type": item_data.type,
             "release_date": item_data.release_date
         }
+        logger.info("Item data processed successfully.")
 
-        if user_data:
+        # User data
+        if 'user_data' in response_data:
             response_data["user_data"] = {
                 "user_id": user_data.user,
                 "age": user_data.age,
                 "gender": user_data.gender,
                 "occupation": user_data.occupation,
                 "residence": user_data.residence
-            }
-        else:
-            response_data["user_data"] = None
+            } if user_data else None
+            if user_data:
+                logger.info("User data processed successfully.")
 
-        
-        if interaction_data:
+        # Interaction data
+        if 'interaction_data' in response_data:
             response_data["interaction_data"] = {
                 "user_id": interaction_data.user,
                 "item_id": interaction_data.item,
                 "rating": interaction_data.rating,
                 "interaction_list": interaction_data.interaction
-            }
-        else:
-            response_data["interaction_data"] = None
-        
+            } if interaction_data else None
+            if interaction_data:
+                logger.info("Interaction data processed successfully.")
+
+        logger.info("Starting database processing...")
         with DATABASE() as db:
             result = db.data_processing(response_data)
-        
-        if result['status'] != 200:
-            return result
-            
+        logger.info("Database processing completed.")
 
+        if result['status'] != 200:
+            logger.error(f"Database processing failed: {result}")
+            return result
+
+        logger.info("Starting final data processing...")
         data_processor = DataProcessing(response_data)
         result = data_processor.process_data()
-        
+        logger.info("Final data processing completed.")
+
         if result['status'] != 200:
-            raise HTTPException(status_code=500, detail="Error in final data processing")
-        
+            logger.error(
+                "Final data processing failed.\n"
+                f"Status: {result.get('status')}\n"
+                f"Message: {result.get('message')}\n"
+                f"Errors: {result.get('errors') if 'errors' in result else 'No detailed errors provided'}"
+            )
+            raise HTTPException(
+                status_code=500,
+                detail=format_traceback(
+                    Exception(f"Final data processing failed: {result}"),
+                    "Error in final data processing"
+                )
+            )
+
+        logger.info(f"Data processing completed successfully for ID: {id}")
         return result
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")        
-        
+        logger.exception(f"Unexpected error during data processing for ID: {id}")
+        raise HTTPException(status_code=500, detail=format_traceback(e, "Unexpected error during data processing"))
+
+
+
 @app.get("/download-json/{id}")
 async def download_json(id: UUID):
-    base_path = f"{file['storage_path']}/{id}"
-
-    node_file_path = os.path.join(base_path, "node.json")
-    edge_file_path = os.path.join(base_path, "edge.json")
-    if not (os.path.exists(node_file_path) and os.path.exists(edge_file_path)):
-        raise HTTPException(status_code=404, detail="One or both JSON files not found")
-
-    zip_path = os.path.join(base_path, "node_edge_files.zip")
     try:
+        base_path = f"{file['storage_path']}/{id}"
+        node_file_path = os.path.join(base_path, "node.json")
+        edge_file_path = os.path.join(base_path, "edge.json")
+        if not (os.path.exists(node_file_path) and os.path.exists(edge_file_path)):
+            raise HTTPException(status_code=404, detail="One or both JSON files not found")
+
+        zip_path = os.path.join(base_path, "node_edge_files.zip")
         with zipfile.ZipFile(zip_path, 'w') as zipf:
-            zipf.write(node_file_path, arcname=f"node.json")
-            zipf.write(edge_file_path, arcname=f"edge.json")
+            zipf.write(node_file_path, arcname="node.json")
+            zipf.write(edge_file_path, arcname="edge.json")
+
+        return FileResponse(zip_path, filename="node_edge_files.zip", media_type="application/zip")
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to create ZIP file")
-        
-    return FileResponse(zip_path, filename="node_edge_files.zip", media_type="application/zip")
+        raise HTTPException(status_code=500, detail=format_traceback(e, "Failed to create or return ZIP file"))
+
 
 @app.get("/sample-data")
 async def process_data(id: UUID, base: str, number_of_bases: int, number_of_interactions: int):
-    
-    N = number_of_bases
-    M = number_of_interactions
     try:
-        sample_data = DataSampling(base, N, M, id)
+        sample_data = DataSampling(base, number_of_bases, number_of_interactions, id)
         return sample_data.get_data()
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    
+        raise HTTPException(status_code=400, detail=format_traceback(e, "Error generating sample data"))
+
 
 @app.get("/get-id-list")
 async def process_data():
-    
     try:
         with DATABASE() as db:
             result = db.get_id_list()
@@ -180,20 +216,14 @@ async def process_data():
             folder_path = Path(f"{file['storage_path']}/{id}")
             node_file = folder_path / "node.json"
             edge_file = folder_path / "edge.json"
-            
-            if folder_path.exists() and node_file.exists() and edge_file.exists():
-                item.update({"has_files": True})
-            else:
-                item.update({"has_files": False})
+            item["has_files"] = folder_path.exists() and node_file.exists() and edge_file.exists()
         return result
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    
-    
+        raise HTTPException(status_code=400, detail=format_traceback(e, "Failed to retrieve ID list"))
+
 
 @app.delete("/delete-data/{id}")
 async def delete_data(id: UUID):
-    
     try:
         with DATABASE() as db:
             db.delete_data(id)
@@ -204,48 +234,124 @@ async def delete_data(id: UUID):
         else:
             return {"message": f"Data with ID {id} deleted. No folder found at {folder_path}."}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred while deleting data: {str(e)}")
-    
+        raise HTTPException(status_code=500, detail=format_traceback(e, "Error deleting data and folder"))
 
 
 @app.post("/integrate-KG")
-async def integrate_KG(base_kg_id: UUID,
-                       added_kg_id: UUID
+async def integrate_KG(
+    base_id: UUID, added_id: UUID,
+    base_first_col: str, add_first_col: str, 
+    base_first_col_has_year : bool, add_first_col_has_year: bool,
+    base_second_col: Optional[str]=None, add_second_col: Optional[str]=None,
 ):
-    data_integration = DataIntegration()
     try:
+        logger.info(f"Loading base dataset: ../storage/{base_id}/item_file.csv")
+        base_df = pd.read_csv(f"../storage/{base_id}/item_file.csv")
+        logger.info(f"Loading added dataset: ../storage/{added_id}/item_file.csv")
+        added_df = pd.read_csv(f"../storage/{added_id}/item_file.csv")
+
+        data_integration = DataIntegration()
+
         with DATABASE() as db:
-            base_kg_columns = db.get_item_columns(base_kg_id)[0][1:]
-            meta_base_columns, meta_base_title = data_integration.get_columns(base_kg_columns, existed=False)
+            logger.info(f"Fetching file names for base_id={base_id}, added_id={added_id}")
+            base_file_name = db.get_file_name(base_id)
+            added_file_name = db.get_file_name(added_id)
 
-            added_kg_columns = db.get_item_columns(added_kg_id)[0][1:]
-            meta_added_columns, meta_added_title = data_integration.get_columns(added_kg_columns, existed=True)
-            if not (meta_base_columns and meta_added_columns):
-                raise HTTPException(status_code=400, detail="KG 통합 불가")
-            
-            integration_meta_columns = set(meta_added_columns.keys()) & set(meta_base_columns.keys())
+            logger.info("Fetching base KG columns...")
+            base_kg_columns = db.get_item_columns(base_id)[0][1:]
+            missing_base_kg_columns, _ = data_integration.get_columns(base_kg_columns, existed=False)
+            existing_meta_columns, _ = data_integration.get_columns(base_kg_columns, existed=True)
 
-            if len(integration_meta_columns) == 0:
-                raise HTTPException(status_code=400, detail="KG 통합 불가")
+            logger.info("Fetching added KG columns...")
+            added_kg_columns = db.get_item_columns(added_id)[0][1:]
+            existing_meta_added_columns, _ = data_integration.get_columns(added_kg_columns, existed=True)
 
+            logger.info("Checking integration meta columns...")
+            integration_meta_columns = set(missing_base_kg_columns.keys()) & set(existing_meta_added_columns.keys())
+            if not integration_meta_columns:
+                logger.error(
+                    f"Integration not possible: No common metadata columns found.\n"
+                    f"Missing in base: {list(missing_base_kg_columns.keys())}\n"
+                    f"Existing in added: {list(existing_meta_added_columns.keys())}"
+                )
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "error": "KG 통합 불가",
+                        "missing_base_columns": list(missing_base_kg_columns.keys()),
+                        "existing_added_columns": list(existing_meta_added_columns.keys())
+                    }
+                )
 
-            base_file_name = db.get_file_name(base_kg_id)
-            added_file_name = db.get_file_name(added_kg_id)
+            base_meta_first_col = existing_meta_columns[base_first_col]
+            add_meta_first_col = existing_meta_added_columns[add_first_col]
 
-            integration_meta_columns = {key: meta_added_columns[key] for key in meta_added_columns if key in integration_meta_columns}
+            base_meta_second_col = existing_meta_columns.get(base_second_col)
+            add_meta_second_col = existing_meta_added_columns.get(add_second_col)
 
-            new_item_data = data_integration.integration_data(integration_meta_columns, base_kg_id, added_kg_id, meta_base_title, meta_added_title)
-            
-            result = db.put_data_integrate(new_item_data, base_kg_id, integration_meta_columns, f"integrated {base_file_name}-KG by {added_file_name}-KG")
+            logger.info("Setting DataIntegration parameters...")
+            data_integration.set_params(
+                df_base=base_df, df_add=added_df,
+                base_first_col=base_meta_first_col, add_first_col=add_meta_first_col,
+                base_second_col=base_meta_second_col, add_second_col=add_meta_second_col,
+                base_has_year_in_first_col=base_first_col_has_year,
+                add_has_year_in_first_col=add_first_col_has_year,
+            )
+
+            integration_meta_columns = {
+                key: existing_meta_added_columns[key]
+                for key in existing_meta_added_columns if key in integration_meta_columns
+            }
+            logger.info(f"Integration target columns: {integration_meta_columns}")
+
+            logger.info("Integrating data...")
+            new_item_data = data_integration.integrate_data(integrate_meta_columns=integration_meta_columns)
+
+            logger.info("Saving integrated data into DB...")
+            result = db.put_data_integrate(
+                integrated_item_df=new_item_data,
+                base_id=base_id,
+                integrate_meta_columns=integration_meta_columns,
+                dataset_name=f"integrated {base_file_name}-KG by {added_file_name}-KG"
+            )
             if result['status'] != 200:
+                logger.error(f"Failed to save integrated data: {result}")
                 return result
-            
+
+            logger.info("Fetching mapping data for final processing...")
             data = db.get_mapping_data(result['id'])
-            
             data_processor = DataProcessing(data)
+
+            logger.info("Running final data processing...")
             result = data_processor.process_data()
             result['added_columns'] = integration_meta_columns
+
+            logger.info(f"Integration completed successfully. Added columns: {integration_meta_columns}")
             return result
 
+    except HTTPException as he:
+        logger.exception("HTTPException occurred during KG integration.")
+        raise he
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error in KG integration: {str(e)}")
+        logger.exception("Unexpected error during KG integration.")
+        raise HTTPException(
+            status_code=500,
+            detail=format_traceback(e, "Unexpected error during KG integration")
+        )
+
+    except Exception as e:
+        req_id = uuid.uuid4().hex[:8]
+        tb = traceback.format_exception(type(e), e, e.__traceback__)
+        logger.exception("KG integration failed [%s]", req_id, extra={"traceback": tb})
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "request_id": req_id,
+                "error": "KG integration failed",
+                "type": e.__class__.__name__,
+                "message": str(e),
+                "args": e.args,
+                "traceback": tb[-15:],
+            }
+        )
