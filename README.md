@@ -4,7 +4,7 @@ RecKG Web lets you create, integrate and visualize recommendation datasets in KG
 
 ![image](https://github.com/user-attachments/assets/77a650fa-c4ab-44b9-9b2f-e8faa64ba45f)
 
-Puvlished in SoftwareX "[RecKG-Web: A web-based interactive visualization tool for standardized knowledge graphs in recommender systems](https://www.sciencedirect.com/science/article/pii/S2352711025002857?via%3Dihub)."
+Published in SoftwareX "[RecKG-Web: A web-based interactive visualization tool for standardized knowledge graphs in recommender systems](https://www.sciencedirect.com/science/article/pii/S2352711025002857?via%3Dihub)."
 
 Web implementation of the paper "[RecKG: Knowledge Graph for Recommender Systems](https://dl.acm.org/doi/10.1145/3605098.3636009)". For more information about RecKG, visit [the official RecKG Repository](https://github.com/tree-jhk/RecKG). You can download RecKG paper from [arxiv](https://arxiv.org/abs/2501.03598).
 
